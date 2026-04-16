@@ -13,12 +13,12 @@ class CabangSeeder extends Seeder
     public function run(): void
     {
         Cabang::insert([
-        ['nama_cabang' => 'Magelang'],
-        ['nama_cabang' => 'Depok'],
-        ['nama_cabang' => 'Sentra'],
-        ['nama_cabang' => 'Surabaya'],
+        ['nama_cabang' => 'Sawangan, Depok'],
+        ['nama_cabang' => 'Magelang, Jawa Tengah'],
+        ['nama_cabang' => 'Sentra Primer, Jakarta Timur'],
+        ['nama_cabang' => 'Surabaya, Jawa Timur'],
         ['nama_cabang' => 'Yogyakarta'],
-        ['nama_cabang' => 'Cilacap'],
+        ['nama_cabang' => 'Cilacap, Jawa Tengah'],
     ]);
     }
 }

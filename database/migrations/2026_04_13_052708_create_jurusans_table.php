@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('jurusans', function (Blueprint $table) {
             $table->id();
             $table->string('nama_jurusan');
-            $table->string('kode_jurusan')->nullable();
+            $table->string('kode_jurusan')->unique();
             $table->foreignId('cabang_id')->constrained('cabangs')->cascadeOnDelete();
             $table->unique(['nama_jurusan', 'cabang_id']);
             $table->boolean('is_active')->default(true);

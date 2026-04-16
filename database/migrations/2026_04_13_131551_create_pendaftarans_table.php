@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('pendaftarans', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_pendaftaran')->unique();
             // RELASI UTAMA
             $table->foreignId('cabang_id')->constrained('cabangs')->onDelete('cascade');
             $table->foreignId('jurusan_id')->constrained('jurusans')->onDelete('cascade');
@@ -27,18 +28,43 @@ return new class extends Migration
             $table->string('jenis_kelamin');
             $table->integer('anak_ke');
 
-            // ALAMAT
-            $table->text('alamat');
-
             // WILAYAH (RELATIONAL ID)
-            $table->string('provinsi_id')->nullable();
-            $table->string('kabupaten_id')->nullable();
-            $table->string('kecamatan_id')->nullable();
-            $table->string('kelurahan_id')->nullable();
+            $table->text('alamat');
+            $table->string('provinsi_nama');
+            $table->string('kabupaten_nama');
+            $table->string('kecamatan_nama');
+            $table->string('kelurahan_nama');
+            $table->string('id_alamat');
 
             // PENDIDIKAN
             $table->string('pendidikan');
             $table->string('sekolah');
+            $table->string('cita_cita');
+            $table->string('hobi');
+            $table->string('no_hp');
+            $table->string('penyakit');
+
+            $table->string('facebook');
+            $table->string('instagram');
+
+            $table->string('nama_wali');
+            $table->string('pendidikan_wali');
+            $table->string('pekerjaan_wali');
+            $table->string('nohp_wali');
+
+            // Ibu
+            $table->string('nama_ibu');
+            $table->string('pendidikan_ibu');
+            $table->string('pekerjaan_ibu');
+            $table->string('nohp_ibu');
+
+            // Keluarga
+            $table->text('alamat_orangtua');
+            $table->integer('jml_keluarga');
+            $table->string('pendapatan_keluarga');
+
+            // 🔥 Status rumah (1 field saja)
+            $table->string('status_rumah');
 
             // BERKAS
             $table->string('berkas')->nullable();
