@@ -13,9 +13,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        
     </head>
-    {{-- <body class="font-sans antialiased">
+    <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             @include('layouts.navigation')
 
@@ -33,32 +32,5 @@
                 {{ $slot }}
             </main>
         </div>
-    </body> --}}
-
-    <body class="font-sans antialiased bg-gray-100">
-        <div x-data="{ sidebarOpen: true }" class="flex">
-
-            @include('components.sidebar')
-
-            <div id="mainContent" 
-                :class="sidebarOpen ? 'ml-[336px]' : 'ml-[80px]'" 
-                class="p-9 w-full min-h-screen transition-all duration-300 ease-in-out z-10">
-                
-                @include('layouts.navigation')
-
-                <div class="mt-4">
-                    {{ $slot }}
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Lucide Icon -->
-        <script src="https://unpkg.com/lucide@latest"></script>
-        <script>
-            lucide.createIcons();
-        </script>
-        <script src="{{ asset('js/sidebar.js') }}"></script>
-
     </body>
 </html>

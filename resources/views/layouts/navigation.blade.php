@@ -1,55 +1,30 @@
-<nav x-data="{ open: false }" class="border-b border-gray-100 dark:border-gray-700 mx-7 bg-white" >
+<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-
-                @php
-                // Tentukan nama menu berdasarkan route aktif
-                if (request()->routeIs('dashboard')) {
-                    $menuName = 'Dashboard';
-                } elseif (request()->routeIs('pendaftaran.*')) {
-                    $menuName = 'Pendaftaran';
-                } elseif (request()->routeIs('seleksi.*')) {
-                    $menuName = 'Seleksi';
-                }else {
-                    $menuName = 'Pengumuman';
-                }
-                @endphp
-
-                <div class="hidden sm:flex">
-                    <a href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-2xl mt-4 font-bold text-black">
-                        {{ __($menuName) }}
+                <!-- Logo -->
+                <div class="shrink-0 flex items-center">
+                    <a href="{{ route('dashboard') }}">
+                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
-    
+
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                </div>
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-4">
-                <!-- Notifikasi -->
-                <button class="relative inline-flex items-center p-2 text-gray-500 hover:text-gray-700 focus:outline-none transition">
-                    <i data-lucide="bell" class="w-6 h-6"></i>
-                    <!-- Badge notifikasi -->
-                    <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">3</span>
-                </button>
-
-                <!-- Dropdown Profile -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none transition">
-                            <!-- Foto Profil / Default -->
-                        @if(Auth::user()->profile_photo_url)
-                            <img class="h-8 w-8 rounded-full object-cover me-2" src="{{ Auth::user()->profile_photo_url }}" alt="Foto Profil">
-                        @else
-                            <!-- Icon orang default -->
-                            <i data-lucide="user" class="w-8 h-8 text-gray-400 rounded-full object-cover bg-white me-2"></i>
-                        @endif
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                            <div>{{ Auth::user()->name }}</div>
 
-                        <!-- Nama User -->
-                        <div>{{ Auth::user()->name }}</div>
-
-                            <!-- Icon dropdown -->
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -63,11 +38,13 @@
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
-                        <!-- Logout -->
+                        <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
+
                             <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
+                                    onclick="event.preventDefault();
+                                                this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
