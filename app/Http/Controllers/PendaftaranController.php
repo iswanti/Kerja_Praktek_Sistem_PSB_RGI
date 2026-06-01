@@ -5,100 +5,165 @@ namespace App\Http\Controllers;
 use App\Models\Cabang;
 use App\Models\Pendaftaran;
 use App\Models\Jurusan;
+use App\Models\Gelombang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\StatusPendaftaranNotification;
 
 
 class PendaftaranController extends Controller
 {
-
     public function index(Request $request)
     {
-        $query = Pendaftaran::with(['cabang', 'jurusan']);
+        $user = auth()->user();
+        $isSuperadmin = $user->role?->nama === 'Superadmin';
+        $query = Pendaftaran::with([
+            'cabang',
+            'jurusan',
+            'gelombang'
+        ]);
+        if (!$isSuperadmin) {
+            $query->where('cabang_id', $user->cabang_id);
+        }
 
-        // SEARCH: kode daftar, nama, jurusan, cabang, periode/status
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search) {
                 $q->where('kode_pendaftaran', 'ilike', "%{$search}%")
                     ->orWhere('nama', 'ilike', "%{$search}%")
                     ->orWhere('status', 'ilike', "%{$search}%")
+
                     ->orWhereHas('jurusan', function ($jurusan) use ($search) {
-                        $jurusan->where('nama', 'ilike', "%{$search}%");
+                        $jurusan->where('nama_jurusan','ilike', "%{$search}%");
                     })
+
                     ->orWhereHas('cabang', function ($cabang) use ($search) {
                         $cabang->where('nama_cabang', 'ilike', "%{$search}%");
                     });
             });
         }
 
-        // FILTER CABANG
-        // if ($request->filled('cabang_id')) {
-        //     $query->where('cabang_id', $request->cabang_id);
-        // }
+        if (
+            $isSuperadmin && $request->filled('cabang_id')
+        ) {
+            $query->where('cabang_id',$request->cabang_id);
+        }
 
-        // // FILTER JURUSAN
-        // if ($request->filled('jurusan_id')) {
-        //     $query->where('jurusan_id', $request->jurusan_id);
-        // }
+        if ($request->filled('jurusan_id')) {
+            $query->where('jurusan_id', $request->jurusan_id);
+        }
 
-        // Filter Jurusan: Hanya jalan jika jurusan_id ada isinya
-        $query->when($request->filled('jurusan_id'), function ($q) use ($request) {
-            return $q->where('jurusan_id', $request->jurusan_id);
-        });
-
-        // Filter Cabang: Hanya jalan jika cabang_id ada isinya
-        $query->when($request->filled('cabang_id'), function ($q) use ($request) {
-            return $q->where('cabang_id', $request->cabang_id);
-        });
-
-        // FILTER STATUS / PERIODE
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status', $request->status );
         }
 
-        // // FILTER PERIODE BULAN, format: 2026-05
-        // if ($request->filled('periode')) {
-        //     [$tahun, $bulan] = explode('-', $request->periode);
+        if ($request->filled('gelombang_id')) {
+            $query->where(
+                'gelombang_id',
+                $request->gelombang_id
+            );
+        }
 
-        //     $query->whereYear('created_at', $tahun)
-        //           ->whereMonth('created_at', $bulan);
-        // }
+        if ($request->filled('tahun_periode')) {
+            $query->whereHas('gelombang', function ($q) use ($request) {
+                $q->where(
+                    'tahun_periode',
+                    $request->tahun_periode
+                );
 
-        // FILTER PER TANGGAL (Format: 2026-05-09)
+            });
+        }
+
         if ($request->filled('periode')) {
-            // whereDate akan memisahkan jam:menit:detik dari kolom created_at 
-            // sehingga hanya membandingkan tanggalnya saja
-            $query->whereDate('created_at', $request->periode);
+            $query->whereDate(
+                'created_at',
+                $request->periode
+            );
         }
 
-        $pendaftarans = $query->latest()
+        $pendaftarans = $query
+            ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        $cabangs = Cabang::orderBy('nama_cabang')->get();
-        $jurusans = Jurusan::orderBy('nama_jurusan')->get();
+        $cabangs = $isSuperadmin
+            ? Cabang::orderBy('nama_cabang')->get()
+            : Cabang::where(
+                'id',
+                $user->cabang_id
+            )->get();
+
+        $jurusans = Jurusan::when(
+                !$isSuperadmin,
+                function ($q) use ($user) {
+                    $q->where(
+                        'cabang_id',
+                        $user->cabang_id
+                    );
+                }
+            )
+            ->orderBy('nama_jurusan')
+            ->get();
+
+        $gelombangs = Gelombang::orderByDesc('id')->get();
+
+        $tahunPeriodes = Gelombang::select('tahun_periode')
+            ->distinct()
+            ->orderByDesc('tahun_periode')
+            ->pluck('tahun_periode');
 
         return view('pendaftaran.index', compact(
             'pendaftarans',
             'cabangs',
-            'jurusans'
+            'jurusans',
+            'gelombangs',
+            'tahunPeriodes',
+            'isSuperadmin'
         ));
     }
 
     public function create (){
+        // abort_unless(auth()->user()->canCreateMenu('Pendaftaran'), 403);
+
+        $gelombang = Gelombang::where('is_active', true)
+        ->where('pendaftaran_mulai', '<=', now())
+        ->where('pendaftaran_selesai', '>=', now())
+        ->first();
+
+        if (!$gelombang) {
+            return view('pendaftaran.tutup');
+        }
+
+        $sudahDaftar = Pendaftaran::where('user_id', auth()->id())
+        ->latest()
+        ->first();
+
+        if ($sudahDaftar) {
+            return view('pendaftaran.sudah-daftar', compact('sudahDaftar'));
+        }
+        
         $cabangs = Cabang::with(['jurusans' => function ($q) {
             $q->where('is_active', true);
         }])
         ->where('is_active', true)
         ->get();
 
-        return view('pendaftaran.create', compact('cabangs'));
+        return view('pendaftaran.create', compact('cabangs', 'gelombang'));
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()->role?->nama !== 'Admin') {
+            $cekPendaftaran = Pendaftaran::where('user_id', auth()->id())->first();
+
+            if ($cekPendaftaran) {
+                return redirect()
+                    ->route('dashboard')
+                    ->with('warning', 'Pendaftaran Anda sudah pernah dilakukan dan saat ini sedang berada pada tahap ' .
+                        ucwords(str_replace('_', ' ', $cekPendaftaran->status)) . '.'
+                    );
+            }
+        }
         // 1. VALIDASI
         $validated = $request->validate([
             'cabang_id' => 'required|exists:cabangs,id',
@@ -164,12 +229,11 @@ class PendaftaranController extends Controller
             'pas_foto' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'foto_kk' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_ktp' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'foto_ijazah' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'foto_ijazah' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'sktm' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'surat_sehat' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_rumah' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'surat_vaksin' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
+        ]); 
 
         $hobi = $request->hobi ?? [];
         if (in_array('Lainnya', $hobi)) {
@@ -201,9 +265,21 @@ class PendaftaranController extends Controller
         $alasan = $validated['alasan'] === 'lainnya'
             ? $validated['alasan_lainnya']
             : $validated['alasan'];
+
+        $gelombang = Gelombang::where('is_active', true)
+            ->where('pendaftaran_mulai', '<=', now())
+            ->where('pendaftaran_selesai', '>=', now())
+            ->first();
+
+        if (!$gelombang) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Pendaftaran belum dibuka.');
+        }
         
         $fileFields = [
-            'pas_foto','foto_kk','foto_ktp','foto_ijazah','sktm','surat_sehat','foto_rumah','surat_vaksin',
+            'pas_foto','foto_kk','foto_ktp','foto_ijazah','sktm','surat_sehat','foto_rumah',
         ];
         $folder = 'berkas_pendaftaran/' . strtolower(str_replace(' ', '_', $validated['nama'])) . '_' . uniqid();
 
@@ -216,12 +292,13 @@ class PendaftaranController extends Controller
 
                 $validated[$field] = $file->storeAs($folder, $filename, 'public');
             }
-        }
-        
+        }   
 
         // 4. SIMPAN
-        $pendaftaran = DB::transaction(function () use ($validated, $status_rumah, $hobi, $pekerjaan_ibu, $pekerjaan_wali, $pengenalan, $alasan){
+        $pendaftaran = DB::transaction(function () use ($validated, $status_rumah, $hobi, $pekerjaan_ibu, $pekerjaan_wali, $pengenalan, $alasan, $gelombang){
             return Pendaftaran::create([
+                'user_id' => auth()->id(),
+                'gelombang_id' => $gelombang->id,
                 'cabang_id' => $validated['cabang_id'],
                 'jurusan_id' => $validated['jurusan_id'],
                 'nik' => $validated['nik'],
@@ -277,20 +354,29 @@ class PendaftaranController extends Controller
                 'sktm' => $validated['sktm'] ?? null,
                 'surat_sehat' => $validated['surat_sehat'] ?? null,
                 'foto_rumah' => $validated['foto_rumah'] ?? null,
-                'surat_vaksin' => $validated['surat_vaksin'] ?? null,
                 'status' => 'menunggu_verifikasi',
+                
             ]);
         });
-        // dd($request->all());
 
         if (!$pendaftaran) {
             return back()->with('error', 'Gagal menyimpan data');
         }
+        
+        $pendaftaran->user?->notify(
+            new StatusPendaftaranNotification($pendaftaran)
+        );
+
+        if (auth()->user()->role?->nama === 'Admin') {
+            return redirect()
+                ->route('admin.pendaftaran.index')
+                ->with('success', 'Pendaftaran berhasil!')
+                ->with('kode', $pendaftaran->kode_pendaftaran);
+        }
 
         return redirect()
-            ->route('pendaftaran.index')
-            ->with('success', 'Pendaftaran berhasil!')
-            ->with('kode', $pendaftaran->kode_pendaftaran);
+            ->route('dashboard')
+            ->with('success', 'Pendaftaran berhasil! Kode pendaftaran Anda: ' . $pendaftaran->kode_pendaftaran);
     }
 
     public function edit($id)
@@ -383,7 +469,6 @@ class PendaftaranController extends Controller
             'sktm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'surat_sehat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_rumah' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'surat_vaksin' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         $data = $validated;
@@ -453,7 +538,7 @@ class PendaftaranController extends Controller
         $pendaftaran->update($data);
 
         return redirect()
-            ->route('pendaftaran.index')
+            ->route('admin.pendaftaran.index')
             ->with('success', 'Data berhasil diupdate');
     }
 
@@ -464,58 +549,78 @@ class PendaftaranController extends Controller
         $pendaftaran->delete();
 
         return redirect()
-            ->route('pendaftaran.index')
+            ->route('admin.pendaftaran.index')
             ->with('success', 'Data berhasil dihapus');
     }
 
+    // public function show($id)
+    // {
+    //     $pendaftaran = Pendaftaran::with(['cabang', 'jurusan'])->findOrFail($id);
+
+    //     return view('pendaftaran.show', compact('pendaftaran'));
+    // }
     public function show($id)
     {
-        $pendaftaran = Pendaftaran::with(['cabang', 'jurusan'])->findOrFail($id);
+        $pendaftaran = Pendaftaran::with(['cabang', 'jurusan', 'wawancara', 'gelombang'])
+            ->findOrFail($id);
 
-        return view('pendaftaran.show', compact('pendaftaran'));
+        // Cek apakah jadwal verifikasi kelulusan sudah tiba
+        $verifikasiKelulusanAktif = false;
+        if ($pendaftaran->gelombang) {
+            $verifikasiKelulusanAktif = now()->greaterThanOrEqualTo(
+                $pendaftaran->gelombang->pengumuman_mulai
+            );
+        }
+
+        return view('pendaftaran.show', compact('pendaftaran', 'verifikasiKelulusanAktif'));
     }
 
-    // public function verifikasi(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|in:diterima,ditolak',
-    //     ]);
-
-    //     $pendaftaran = Pendaftaran::findOrFail($id);
-
-    //     $pendaftaran->update([
-    //         'status' => $request->status,
-    //     ]);
-
-    //     return redirect()
-    //         ->route('pendaftaran.show', $pendaftaran->id)
-    //         ->with('success', 'Status pendaftaran berhasil diperbarui.');
-    // }
     public function verifikasi(Request $request, $id)
     {
+        // Hanya admin yang boleh melakukan verifikasi
+        // abort_unless(auth()->check() && auth()->user()->role?->nama === 'Admin', 403 );
+
         $request->validate([
-            'status' => 'required|in:menunggu_verifikasi,terverifikasi,seleksi_pretest,wawancara,verifikasi_kelulusan_siswa,ditolak',
+            'status' => 'required|in:menunggu_verifikasi,seleksi_pretest,wawancara,verifikasi_kelulusan_siswa,diterima,ditolak,cadangan',
+
+            'alasan_ditolak' => 'required_if:status,ditolak|nullable|string',
         ]);
 
         $pendaftaran = Pendaftaran::findOrFail($id);
 
         $pendaftaran->update([
             'status' => $request->status,
+
+            'alasan_ditolak' => $request->status === 'ditolak'
+                ? $request->alasan_ditolak
+                : null,
         ]);
 
-        // Pesan sukses sesuai status yang dipilih
+        if ($pendaftaran->user) {
+            $pendaftaran->user->notify(
+                new \App\Notifications\StatusPendaftaranNotification(
+                    $pendaftaran
+                )
+            );
+        }
+
+        // Pesan sukses sesuai status
         $messages = [
-            'menunggu_verifikasi'       => 'Pendaftaran berhasil dikembalikan ke tahap Menunggu Verifikasi.',
-            'terverifikasi'             => 'Pendaftaran berhasil diverifikasi.',
-            'seleksi_pretest'           => 'Pendaftaran berhasil dipindahkan ke tahap Seleksi Pretest.',
-            'wawancara'                 => 'Pendaftaran berhasil dipindahkan ke tahap Wawancara.',
-            'verifikasi_kelulusan_siswa'=> 'Pendaftaran berhasil dipindahkan ke tahap Verifikasi Kelulusan Siswa.',
-            'ditolak'                   => 'Pendaftaran ditolak.',
+            'menunggu_verifikasi'        => 'Pendaftaran berhasil dikembalikan ke tahap Menunggu Verifikasi.',
+            'seleksi_pretest'            => 'Pendaftaran berhasil diverifikasi, peserta dapat mengerjakan pretest.',
+            'wawancara'                  => 'Pendaftaran berhasil dipindahkan ke tahap Wawancara.',
+            'verifikasi_kelulusan_siswa' => 'Pendaftaran berhasil dipindahkan ke tahap Verifikasi Kelulusan.',
+            'diterima'                   => 'Peserta dinyatakan LULUS.',
+            'ditolak'                    => 'Peserta dinyatakan TIDAK LULUS.',
+            'cadangan'                   => 'Peserta dimasukkan ke daftar CADANGAN.',
         ];
 
         return redirect()
-            ->route('pendaftaran.show', $pendaftaran->id)
-            ->with('success', $messages[$request->status] ?? 'Status pendaftaran berhasil diperbarui.');
+            ->route('admin.pendaftaran.show', $pendaftaran->id)
+            ->with(
+                'success',
+                $messages[$request->status] ?? 'Status pendaftaran berhasil diperbarui.'
+            );
     }
 
     

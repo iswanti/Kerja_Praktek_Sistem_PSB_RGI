@@ -11,51 +11,140 @@
             });
         </script>
     @endif
-<div class="w-full py-2">
-        {{-- ZOOM CARD --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+    <div class="w-full py-2">
+        @php
+            $isAdmin = auth()->user()->role_id == 2;
+        @endphp
+        @if($isAdmin)
+            <div x-data="{ open: false }" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+            @if($jadwals->count())
+                <button type="button"
+                        @click="open = !open"
+                        class="w-full flex items-center justify-between gap-4">
 
-                <div class="flex items-center gap-2">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
-                        <i data-lucide="video" class="w-7 h-7"></i>
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
+                            <i data-lucide="video" class="w-7 h-7"></i>
+                        </div>
+
+                        <div class="text-left">
+                            <h2 class="font-bold text-gray-900">Link Meeting Wawancara</h2>
+                            <p class="text-sm text-gray-500">
+                                {{ $jadwals->whereNotNull('link_wawancara')->count() }} link meeting aktif
+                            </p>
+                        </div>
                     </div>
 
+                    <i data-lucide="chevron-down"
+                    class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                    :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="open"
+                    x-transition
+                    class="mt-5 space-y-3">
+
+                    @foreach($jadwals as $jadwal)
+                        @if($jadwal->link_wawancara)
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border border-gray-100 rounded-2xl p-4">
+
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                        <i data-lucide="video" class="w-5 h-5"></i>
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <h3 class="font-semibold text-gray-900">
+                                            {{ ucwords(str_replace('_', ' ', $jadwal->unsur)) }}
+                                        </h3>
+
+                                        <p class="text-sm text-gray-500 truncate">
+                                            {{ $jadwal->gelombang->nama_gelombang ?? '' }}
+
+                                            @if($jadwal->cabang)
+                                                · {{ $jadwal->cabang->nama_cabang }}
+                                            @endif
+
+                                            @if($jadwal->jurusan)
+                                                · {{ $jadwal->jurusan->nama_jurusan }}
+                                            @endif
+
+                                            @if($jadwal->waktu_mulai)
+                                                · {{ \Carbon\Carbon::parse($jadwal->waktu_mulai)->translatedFormat('d M Y, H:i') }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                                    <p class="text-xs text-gray-400">Link Meeting</p>
+                                    <a href="{{ $jadwal->link_wawancara }}"
+                                    target="_blank"
+                                    class="text-sm font-semibold text-blue-600 hover:underline truncate">
+                                        {{ $jadwal->link_wawancara }}
+                                    </a>
+                                </div>
+
+                                <a href="{{ $jadwal->link_wawancara }}"
+                                target="_blank"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shrink-0">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    Buka
+                                </a>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            @else
+                <div class="flex items-center gap-3 text-gray-400">
+                    <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center shrink-0">
+                        <i data-lucide="video-off" class="w-7 h-7"></i>
+                    </div>
                     <div>
-                        <h2 class="font-bold text-gray-900">Link Zoom Wawancara</h2>
-                        <p class="text-sm text-gray-500">
-                            Gunakan link berikut untuk sesi wawancara online
-                        </p>
+                        <p class="font-semibold text-gray-600">Belum ada link meeting aktif</p>
+                        <p class="text-sm">Link meeting wawancara belum diatur atau belum diaktifkan.</p>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-                    <div>
-                        <p class="text-xs text-gray-400">Link Meeting</p>
-                        <a href="#" class="text-sm font-semibold text-blue-600">
-                            https://zoom.us/j/12345
-                        </a>
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-gray-400">Meeting ID</p>
-                        <p class="text-sm font-semibold text-gray-900">123 456 7890</p>
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-gray-400">Passcode</p>
-                        <p class="text-sm font-semibold text-gray-900">RGIWAW2024</p>
-                    </div>
-                </div>
-
-                <a href="#"
-                   class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                    Buka Zoom
-                </a>
-
+            @endif
             </div>
+        @else
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6"> 
+            @if($jadwals->count()) 
+            <div class="space-y-4"> @foreach($jadwals as $jadwal) @if($jadwal->link_wawancara) 
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 border border-gray-100 rounded-2xl p-4"> 
+                    <div class="flex items-center gap-3 shrink-0"> 
+                        <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center"> 
+                            <i data-lucide="video" class="w-7 h-7"></i> 
+                        </div> 
+                        <div> 
+                            <h2 class="font-bold text-gray-900"> Link Meeting {{ ucwords(str_replace('_', ' ', $jadwal->unsur)) }} </h2> 
+                            <p class="text-sm text-gray-500"> {{ $jadwal->gelombang->nama_gelombang ?? '' }} @if($jadwal->cabang) · {{ $jadwal->cabang->nama_cabang }} @endif @if($jadwal->jurusan) · {{ $jadwal->jurusan->nama_jurusan }} @endif @if($jadwal->waktu_mulai) · {{ \Carbon\Carbon::parse($jadwal->waktu_mulai)->translatedFormat('d M Y, H:i') }} @endif </p> 
+                        </div> 
+                    </div> 
+                    <div class="flex flex-col gap-1 flex-1 min-w-0"> 
+                        <p class="text-xs text-gray-400">Link Meeting</p> 
+                        <a href="{{ $jadwal->link_wawancara }}" target="_blank" class="text-sm font-semibold text-blue-600 hover:underline truncate"> {{ $jadwal->link_wawancara }} </a> 
+                    </div> 
+                    <a href="{{ $jadwal->link_wawancara }}" target="_blank" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shrink-0"> 
+                        <i data-lucide="external-link" class="w-4 h-4"></i> Buka Meeting 
+                    </a> 
+                </div> 
+                @endif 
+                @endforeach 
+            </div> 
+            @else 
+            <div class="flex items-center gap-3 text-gray-400"> 
+                <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center shrink-0"> 
+                    <i data-lucide="video-off" class="w-7 h-7"></i> 
+                </div> 
+                <div> 
+                    <p class="font-semibold text-gray-600">Belum ada link meeting aktif</p> 
+                    <p class="text-sm">Link meeting wawancara belum diatur atau belum diaktifkan.</p> 
+                </div> 
+            </div> 
+            @endif 
         </div>
+        @endif
 
         {{-- TABLE CARD --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -68,21 +157,39 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <button class="px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold border border-indigo-200">
-                        Semua
-                    </button>
+                    <form method="GET"
+                        action="{{ route('admin.wawancara.index') }}"
+                        class="flex flex-wrap items-center gap-2">
 
-                    <button class="px-4 py-2 rounded-full bg-white text-gray-500 text-xs font-semibold border border-gray-200">
-                        Belum Dinilai
-                    </button>
+                        <a href="{{ route('admin.wawancara.index') }}"
+                        class="px-4 py-2 rounded-full text-xs font-semibold border
+                        {{ request('status_penilaian') == null ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-gray-500 border-gray-200' }}">
+                            Semua
+                        </a>
 
-                    <button class="px-4 py-2 rounded-full bg-white text-gray-500 text-xs font-semibold border border-gray-200">
-                        Selesai
-                    </button>
+                        <a href="{{ route('admin.wawancara.index', ['status_penilaian' => 'belum', 'search' => request('search')]) }}"
+                        class="px-4 py-2 rounded-full text-xs font-semibold border
+                        {{ request('status_penilaian') == 'belum' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-gray-500 border-gray-200' }}">
+                            Belum Dinilai
+                        </a>
 
-                    <input type="text"
-                           placeholder="Cari nama / kode..."
-                           class="rounded-xl border-gray-200 text-sm px-4 py-2">
+                        <a href="{{ route('admin.wawancara.index', ['status_penilaian' => 'selesai', 'search' => request('search')]) }}"
+                        class="px-4 py-2 rounded-full text-xs font-semibold border
+                        {{ request('status_penilaian') == 'selesai' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-gray-500 border-gray-200' }}">
+                            Selesai
+                        </a>
+
+                        <input type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari nama / kode..."
+                            class="rounded-xl border-gray-200 text-sm px-4 py-2">
+
+                        <button type="submit"
+                                class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold">
+                            Cari
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -215,15 +322,19 @@
                                 {{-- Aksi --}}
                                 <td class="px-5 py-4">
                                     <div class="flex justify-center gap-2">
-                                        <a href="{{ route('wawancara.edit', $item->id) }}"
-                                        class="px-4 py-2 rounded-lg border border-indigo-500 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold">
-                                            Input Penilaian
-                                        </a>
-
-                                        <a href="{{ route('pendaftaran.show', $item->id) }}"
-                                        class="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold">
-                                            Detail
-                                        </a>
+                                        @if(auth()->user()->canUpdateMenu('Wawancara'))
+                                            <a href="{{ route('admin.wawancara.edit', $item->id) }}"
+                                            class="px-4 py-2 rounded-lg border border-indigo-500 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold">
+                                                Input Penilaian
+                                            </a>
+                                        @endif
+                                        
+                                        @if(auth()->user()->canReadMenu('Wawancara'))
+                                            <a href="{{ route('admin.wawancara.show', $item->id) }}"
+                                            class="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold">
+                                                Detail
+                                            </a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

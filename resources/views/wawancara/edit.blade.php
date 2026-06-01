@@ -14,7 +14,7 @@
                         </p>
                     </div>
 
-                    <a href="{{ route('pendaftaran.index') }}"
+                    <a href="{{ route('admin.pendaftaran.index') }}"
                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i>
                         Kembali ke Daftar
@@ -179,7 +179,7 @@
                 </div>
 
                 {{-- FORM WAWANCARA --}}
-                <form action="{{ route('wawancara.store', $pendaftaran->id) }}" method="POST">
+                <form action="{{ route('admin.wawancara.store', $pendaftaran->id) }}" method="POST">
                     @csrf
 
                     @php

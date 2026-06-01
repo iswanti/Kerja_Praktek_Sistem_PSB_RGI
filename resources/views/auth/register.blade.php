@@ -28,12 +28,10 @@
                 <div>
                     {{-- <x-input-label for="email" :value="__('Email')" /> --}}
                     <label class="text-sm font-semibold text-gray-700" for="phone">No Handphone</label>
-                    <input type="text" id="phone" name="phone" value="{{ old('phone') }}" required autofocus autocomplete="phone" class="w-full mt-1 px-4 py-3 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
+                    <input type="text" name="phone" maxlength="13" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" value="{{ old('phone') }}" required autofocus autocomplete="phone" class="w-full mt-1 px-4 py-3 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                 </div>
             </div>
-
-
 
             <!-- Email Address -->
             <div class="mt-4">
@@ -47,17 +45,32 @@
 
                 <!-- Password -->
                 <div class="mt-4">
-                    {{-- <x-input-label for="password" :value="__('Password')" /> --}}
                     <label class="text-sm font-semibold text-gray-700">Password</label>
-                    <input type="password" id="password" name="password" required autofocus autocomplete="new-password" class="w-full mt-1 px-4 py-3 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
+                    <div x-data="{ show: false }" class="relative mt-1">
+                        <input :type="show ? 'text' : 'password'" id="password" name="password" required autocomplete="new-password" class="w-full px-4 py-3 pr-12 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
+
+                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-blue-600">
+                            <i data-lucide="eye" x-show="!show" class="w-5 h-5"></i>
+                            <i data-lucide="eye-off" x-show="show" x-cloak class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="mt-4">
-                    {{-- <x-input-label for="password_confirmation" :value="__('Confirm Password')" /> --}}
                     <label class="text-sm font-semibold text-gray-700" for="password_confirmation">Konfirmasi Password</label>
-                    <input type="password" id="password_confirmation" name="password_confirmation" required autofocus autocomplete="new-password" class="w-full mt-1 px-4 py-3 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
+
+                    <div x-data="{ show: false }" class="relative mt-1">
+                        <input :type="show ? 'text' : 'password'" id="password_confirmation" name="password_confirmation" required autocomplete="new-password" class="w-full px-4 py-3 pr-12 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400">
+
+                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-blue-600">
+                            <i data-lucide="eye" x-show="!show" class="w-5 h-5"></i>
+                            <i data-lucide="eye-off" x-show="show" x-cloak class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                 </div>
             </div>
@@ -83,4 +96,14 @@
             </p>
         </form>
     </div>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+
+            document.addEventListener('click', function () {
+                lucide.createIcons();
+            });
+        });
+    </script>
 </x-guest-layout>

@@ -78,9 +78,9 @@ return new class extends Migration
             $table->string('sktm');
             $table->string('surat_sehat');
             $table->string('foto_rumah');
-            $table->string('surat_vaksin')->nullable();
 
             $table->string('status')->default('menunggu_verifikasi');
+            $table->text('alasan_ditolak')->nullable();
 
             $table->timestamps();
         });

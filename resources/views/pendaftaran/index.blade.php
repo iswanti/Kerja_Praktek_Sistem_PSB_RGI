@@ -23,12 +23,13 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-
-                        <a href="{{ route('pendaftaran.create') }}"
-                           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
-                            <i data-lucide="plus" class="w-5 h-5"></i>
-                            Tambah Data
-                        </a>
+                        @if(auth()->user()->canCreateMenu('Pendaftaran'))
+                            <a href="{{ route('pendaftaran.create') }}"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                Tambah Data
+                            </a>
+                        @endif
 
                         <a href="#"
                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
@@ -40,29 +41,60 @@
 
                 {{-- FILTER --}}
                 <form method="GET"
-                    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mt-8">
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-4 mt-8">
 
                     {{-- SEARCH --}}
                     <div class="relative">
-
                         <i data-lucide="search"
                         class="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
 
                         <input type="text"
                             name="search"
                             value="{{ request('search') }}"
-                            placeholder="Cari..."
+                            placeholder="Cari kode / nama..."
                             class="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500">
                     </div>
 
+                    {{-- TAHUN AJARAN --}}
+                    <select name="tahun_periode"
+                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
+
+                        <option value="">Semua Tahun</option>
+
+                        @foreach($tahunPeriodes as $tahun)
+                            <option value="{{ $tahun }}"
+                                {{ request('tahun_periode') == $tahun ? 'selected' : '' }}>
+                                {{ $tahun }}
+                            </option>
+                        @endforeach
+
+                    </select>
+
+                    {{-- CABANG --}}
+                    @if($isSuperadmin)
+                        <select name="cabang_id"
+                                class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
+
+                            <option value="">Semua Cabang</option>
+
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang->id }}"
+                                    {{ request('cabang_id') == $cabang->id ? 'selected' : '' }}>
+                                    {{ $cabang->nama_cabang }}
+                                </option>
+                            @endforeach
+
+                        </select>
+                    @endif
+
                     {{-- JURUSAN --}}
                     <select name="jurusan_id"
-                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500">
+                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
 
                         <option value="">Semua Jurusan</option>
 
-                        @foreach ($jurusans as $jurusan)
-                            <option value="{{ $jurusan->id }}" class="text-black"
+                        @foreach($jurusans as $jurusan)
+                            <option value="{{ $jurusan->id }}"
                                 {{ request('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
                                 {{ $jurusan->nama_jurusan }}
                             </option>
@@ -70,37 +102,73 @@
 
                     </select>
 
-                    {{-- CABANG --}}
-                    <select name="cabang_id"
-                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500">
+                    {{-- GELOMBANG --}}
+                    <select name="gelombang_id"
+                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
 
-                        <option value="">Semua Cabang</option>
+                        <option value="">Semua Gelombang</option>
 
-                        @foreach ($cabangs as $cabang)
-                            <option value="{{ $cabang->id }}"
-                                {{ request('cabang_id') == $cabang->id ? 'selected' : '' }}>
-                                {{ $cabang->nama_cabang }}
+                        @foreach($gelombangs as $gelombang)
+                            <option value="{{ $gelombang->id }}"
+                                {{ request('gelombang_id') == $gelombang->id ? 'selected' : '' }}>
+                                {{ $gelombang->nama_gelombang }}
                             </option>
                         @endforeach
 
                     </select>
 
-                    {{-- PERIODE --}}
-                    <input type="date"
-                        name="periode"
-                        value="{{ request('periode') }}"
-                        class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500">
+                    {{-- STATUS --}}
+                    <select name="status"
+                            class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
 
-                    {{-- FILTER BUTTON --}}
-                    <button type="submit"
-                            class="w-full rounded-2xl border border-blue-500 text-blue-600 py-3 font-semibold hover:bg-blue-50 transition-all">
+                        <option value="">Semua Status</option>
 
-                        <div class="flex items-center justify-center gap-2">
-                            <i data-lucide="filter" class="w-4 h-4"></i>
+                        <option value="menunggu_verifikasi"
+                            {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>
+                            Menunggu Verifikasi
+                        </option>
+
+                        <option value="terverifikasi"
+                            {{ request('status') == 'terverifikasi' ? 'selected' : '' }}>
+                            Terverifikasi
+                        </option>
+
+                        <option value="seleksi_pretest"
+                            {{ request('status') == 'seleksi_pretest' ? 'selected' : '' }}>
+                            Seleksi Pretest
+                        </option>
+
+                        <option value="wawancara"
+                            {{ request('status') == 'wawancara' ? 'selected' : '' }}>
+                            Wawancara
+                        </option>
+
+                        <option value="verifikasi_kelulusan_siswa"
+                            {{ request('status') == 'verifikasi_kelulusan_siswa' ? 'selected' : '' }}>
+                            Verifikasi Kelulusan
+                        </option>
+
+                        <option value="ditolak"
+                            {{ request('status') == 'ditolak' ? 'selected' : '' }}>
+                            Ditolak
+                        </option>
+
+                    </select>
+
+                    {{-- BUTTON --}}
+                    <div class="flex gap-2">
+
+                        <button type="submit"
+                                class="flex-1 rounded-2xl bg-blue-600 text-white py-3 font-semibold hover:bg-blue-700">
                             Filter
-                        </div>
+                        </button>
 
-                    </button>
+                        <a href="{{ route('admin.pendaftaran.index') }}"
+                        class="px-4 rounded-2xl border border-gray-200 flex items-center justify-center hover:bg-gray-50">
+                            Reset
+                        </a>
+
+                    </div>
 
                 </form>
 
@@ -221,31 +289,37 @@
                                         <div class="flex items-center justify-center gap-4">
 
                                             {{-- Lihat --}}
-                                            <a href="{{ route('pendaftaran.show', $item->id) }}"
-                                                class="text-blue-600 hover:text-blue-800 transition">
-                                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                            @if(auth()->user()->canReadMenu('Pendaftaran'))
+                                                <a href="{{ route('admin.pendaftaran.show', $item->id) }}"
+                                                    class="text-blue-600 hover:text-blue-800 transition">
+                                                        <i data-lucide="eye" class="w-5 h-5"></i>
                                                 </a>
+                                            @endif
 
                                             {{-- EDIT --}}
-                                            <a href="{{ route('pendaftaran.edit', $item->id) }}"
-                                               class="text-indigo-600 hover:text-indigo-800 text-lg">
-                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
-                                            </a>
+                                            @if(auth()->user()->canUpdateMenu('Pendaftaran'))
+                                                <a href="{{ route('admin.pendaftaran.edit', $item->id) }}"
+                                                class="text-indigo-600 hover:text-indigo-800 text-lg">
+                                                    <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                </a>
+                                            @endif
 
                                             {{-- DELETE --}}
-                                            <form action="{{ route('pendaftaran.destroy', $item->id) }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                            @if(auth()->user()->canDeleteMenu('Pendaftaran'))
+                                                <form action="{{ route('admin.pendaftaran.destroy', $item->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
 
-                                                @csrf
-                                                @method('DELETE')
+                                                    @csrf
+                                                    @method('DELETE')
 
-                                                <button type="submit"
-                                                        class="text-red-500 hover:text-red-700 text-lg">
-                                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
-                                                </button>
+                                                    <button type="submit"
+                                                            class="text-red-500 hover:text-red-700 text-lg">
+                                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                                    </button>
 
-                                            </form>
+                                                </form>
+                                            @endif
 
                                         </div>
 

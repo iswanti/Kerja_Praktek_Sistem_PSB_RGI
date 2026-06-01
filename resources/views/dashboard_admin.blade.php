@@ -1,67 +1,82 @@
 <x-app-layout>
-    <div class="w-full mx-auto sm:px-6 lg:px-8 py-8 space-y-5">
-        {{-- <div class="w-full mx-auto sm:px-6 lg:px-8 py-8"> --}}
-
-        {{-- HEADER --}}
-        <div>
-            <h1 class="text-3xl font-extrabold text-gray-900">Dashboard</h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Ringkasan data pendaftaran calon siswa berdasarkan cabang dan jurusan
-            </p>
-        </div>
+    <div class="w-full mx-auto py-8 space-y-5">
 
         {{-- FILTER --}}
         <form method="GET"
-              class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
 
-              
-            <div>
-                <label class="text-xs text-gray-500">Tahun Ajaran</label>
-                <select name="tahun_ajaran" class="mt-1 w-full rounded-xl border-gray-200 text-sm text-black">
-                    <option value="2024/2025">2024/2025</option>
-                    <option value="2025/2026">2025/2026</option>
-                </select>
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 {{ $isSuperadmin ? 'xl:grid-cols-5' : 'xl:grid-cols-4' }} gap-4 items-end">
 
-            <div>
-                <label class="text-xs text-gray-500">Cabang</label>
-                <select name="cabang_id" class="mt-1 w-full rounded-xl border-gray-200 text-sm text-black">
-                    <option value="">Semua Cabang</option>
-                    @foreach($cabangs as $cabang)
-                        <option value="{{ $cabang->id }}" {{ request('cabang_id') == $cabang->id ? 'selected' : '' }}>
-                            {{ $cabang->nama_cabang }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Tahun Ajaran</label>
+                    <select name="tahun_periode"
+                            class="w-full h-12 rounded-xl border-gray-200 text-sm text-gray-800 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+                        <option value="">Semua Tahun Ajaran</option>
 
-            <div>
-                <label class="text-xs text-gray-500">Jurusan</label>
-                <select name="jurusan_id" class="mt-1 w-full rounded-xl border-gray-200 text-sm text-black">
-                    <option value="">Semua Jurusan</option>
-                    @foreach($jurusans as $jurusan)
-                        <option value="{{ $jurusan->id }}" {{ request('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
-                            {{ $jurusan->nama_jurusan ?? $jurusan->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                        @foreach($tahunPeriodes as $tahun)
+                            <option value="{{ $tahun }}" {{ request('tahun_periode') == $tahun ? 'selected' : '' }}>
+                                {{ $tahun }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div>
-                <label class="text-xs text-gray-500">Periode</label>
-                <select name="periode" class="mt-1 w-full rounded-xl border-gray-200 text-sm text-black">
-                    <option value="2026-05">Mei 2026</option>
-                    <option value="2026-04">April 2026</option>
-                    <option value="2026-03">Maret 2026</option>
-                </select>
-            </div>
+                @if($isSuperadmin)
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Cabang</label>
+                        <select name="cabang_id"
+                                class="w-full h-12 rounded-xl border-gray-200 text-sm text-gray-800 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+                            <option value="">Semua Cabang</option>
 
-            <div class="flex items-end">
-                <button type="submit"
-                        class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-3 font-semibold">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
-                    Filter
-                </button>
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang->id }}" {{ request('cabang_id') == $cabang->id ? 'selected' : '' }}>
+                                    {{ $cabang->nama_cabang }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Jurusan</label>
+                    <select name="nama_jurusan"
+                            class="w-full h-12 rounded-xl border-gray-200 text-sm text-gray-800 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+                        <option value="">Semua Jurusan</option>
+
+                        @foreach($jurusans as $jurusan)
+                            <option value="{{ $jurusan->nama_jurusan }}" {{ request('nama_jurusan') == $jurusan->nama_jurusan ? 'selected' : '' }}>
+                                {{ $jurusan->nama_jurusan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Gelombang</label>
+                    <select name="gelombang_id"
+                            class="w-full h-12 rounded-xl border-gray-200 text-sm text-gray-800 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+                        <option value="">Semua Gelombang</option>
+
+                        @foreach($gelombangs as $gelombang)
+                            <option value="{{ $gelombang->id }}" {{ request('gelombang_id') == $gelombang->id ? 'selected' : '' }}>
+                                {{ $gelombang->nama_gelombang }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit"
+                             class="h-12 px-5 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold">
+                        Filter
+                    </button>
+
+                    <a href="{{ url()->current() }}"
+                    class="h-12 inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl px-5 text-sm font-semibold">
+                        Reset
+                    </a>
+                </div>
+
             </div>
         </form>
 
@@ -95,70 +110,98 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center">
-                    <i data-lucide="building-2" class="w-7 h-7"></i>
+                <div class="w-14 h-14 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center">
+                    <i data-lucide="check-circle" class="w-7 h-7"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Total Cabang</p>
+                    <p class="text-sm text-gray-500">Diterima</p>
                     <h2 class="text-3xl font-extrabold text-gray-900">
-                        {{ $totalCabang ?? 0 }}
+                        {{ $diterima ?? 0 }}
                     </h2>
-                    <p class="text-xs text-gray-500">Cabang Aktif</p>
+                    <p class="text-xs text-gray-500">Peserta Lulus</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="bookmark" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Cadangan</p>
+                    <h2 class="text-3xl font-extrabold text-gray-900">
+                        {{ $cadangan ?? 0 }}
+                    </h2>
+                    <p class="text-xs text-gray-500">Peserta Cadangan</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+                    <i data-lucide="x-circle" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Ditolak</p>
+                    <h2 class="text-3xl font-extrabold text-gray-900">
+                        {{ $ditolak ?? 0 }}
+                    </h2>
+                    <p class="text-xs text-gray-500">Peserta Tidak Lulus</p>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
                 <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
-                    <i data-lucide="book-open" class="w-7 h-7"></i>
+                    <i data-lucide="graduation-cap" class="w-7 h-7"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Total Jurusan</p>
+                    <p class="text-sm text-gray-500">Total Alumni</p>
                     <h2 class="text-3xl font-extrabold text-gray-900">
-                        {{ $totalJurusan ?? 0 }}
+                        {{ number_format($totalAlumni ?? 0, 0, ',', '.') }}
                     </h2>
-                    <p class="text-xs text-gray-500">Jurusan Aktif</p>
+                    <p class="text-xs text-gray-500">
+                        {{ request('tahun_periode')
+                            ? 'Angkatan ' . request('tahun_periode')
+                            : 'Semua angkatan' }}
+                    </p>
                 </div>
             </div>
-
         </div>
         
         {{-- Status Tahapan Pendaftaran --}}
 
-       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-6 w-full">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-6 w-full">
             <h2 class="text-sm font-bold text-gray-900 mb-8">
                 Status Tahapan Pendaftaran
             </h2>
 
             @php
-                $total = ($totalPendaftar ?? 0) > 0 ? $totalPendaftar : 1248;
-
+                $total = ($totalPendaftar ?? 0) > 0 ? $totalPendaftar : 0;
                 $steps = [
-                    [
-                        'label' => 'Menunggu Verifikasi',
-                        'count' => ($menungguVerifikasi ?? 0) > 0 ? $menungguVerifikasi : 320,
-                        'color' => '#f59e0b',
-                    ],
-                    [
-                        'label' => 'Terverifikasi',
-                        'count' => ($terverifikasi ?? 0) > 0 ? $terverifikasi : 280,
-                        'color' => '#22c55e',
-                    ],
-                    [
-                        'label' => 'Seleksi Pretest',
-                        'count' => ($seleksiPretest ?? 0) > 0 ? $seleksiPretest : 276,
-                        'color' => '#2563eb',
-                    ],
-                    [
-                        'label' => 'Wawancara',
-                        'count' => ($wawancara ?? 0) > 0 ? $wawancara : 192,
-                        'color' => '#8b5cf6',
-                    ],
-                    [
-                        'label' => 'Verifikasi Kelulusan Siswa',
-                        'count' => ($verifikasiKelulusan ?? 0) > 0 ? $verifikasiKelulusan : 180,
-                        'color' => '#14b8a6',
-                    ],
-                ];
+                [
+                    'label' => 'Menunggu Verifikasi',
+                    'count' => ($menungguVerifikasi ?? 0),
+                    'color' => '#f59e0b',
+                ],
+                [
+                    'label' => 'Seleksi Pretest',
+                    'count' => ($seleksiPretest ?? 0),
+                    'color' => '#2563eb',
+                ],
+                [
+                    'label' => 'Wawancara',
+                    'count' => ($wawancara ?? 0),
+                    'color' => '#8b5cf6',
+                ],
+                [
+                    'label' => 'Verifikasi Kelulusan',
+                    'count' => ($verifikasiKelulusan ?? 0),
+                    'color' => '#14b8a6',
+                ],
+                [
+                    'label' => 'Diterima',
+                    'count' => ($diterima ?? 0),
+                    'color' => '#22c55e',
+                ],
+            ];
             @endphp
 
             {{-- TIMELINE --}}
@@ -215,6 +258,7 @@
 
                 </div>
             </div>
+            
 
             {{-- TOTAL --}}
             <div class="relative mt-8 pt-4">
@@ -240,19 +284,19 @@
                         <option>Semua Cabang</option>
                     </select>
                 </div>
-                <div class="relative h-56">
+                <div class="relative h-80">
                     <canvas id="barChart"></canvas>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-gray-900">Jumlah Pendaftar per Jurusan</h3>
+                    <h3 class="text-sm font-bold text-gray-900">Pendaftar & Alumni per Jurusan</h3>
                     <select class="text-xs border-gray-200 rounded-lg text-black">
                         <option>Semua Jurusan</option>
                     </select>
                 </div>
-                <div class="relative h-56">
+                <div class="relative h-80">
                     <canvas id="donutChart"></canvas>
                 </div>
             </div>
@@ -264,7 +308,7 @@
                         <option>Semua Cabang</option>
                     </select>
                 </div>
-                <div class="relative h-56">
+                <div class="relative h-80">
                     <canvas id="lineChart"></canvas>
                 </div>
             </div>
@@ -283,48 +327,83 @@
                     </p>
                 </div>
 
-                <a href="#"
+                <a href="{{ route('admin.dashboard.export-ringkasan', request()->query()) }}"
                    class="inline-flex items-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl">
                     <i data-lucide="download" class="w-5 h-5"></i>
                     Export
                 </a>
+                
             </div>
 
             <div class="overflow-x-auto rounded-xl border border-gray-100">
-                <table class="min-w-[1000px] w-full text-sm">
+                <table class="min-w-[1200px] w-full text-sm">
                     <thead class="bg-gray-50">
+
                         <tr>
-                            <th rowspan="2" class="px-4 py-3 text-left text-xs font-bold text-gray-600 border-b">No</th>
-                            <th rowspan="2" class="px-4 py-3 text-left text-xs font-bold text-gray-600 border-b">Cabang</th>
-                            <th colspan="{{ $jurusans->count() }}" class="px-4 py-3 text-center text-xs font-bold text-blue-600 bg-blue-50 border-b">
+                            <th rowspan="2"
+                                class="px-4 py-3 text-left text-xs font-bold text-gray-600 border-b">
+                                No
+                            </th>
+
+                            <th rowspan="2"
+                                class="px-4 py-3 text-left text-xs font-bold text-gray-600 border-b">
+                                Cabang
+                            </th>
+
+                            <th colspan="{{ $jurusansRingkasan->count() }}"
+                                class="px-4 py-3 text-center text-xs font-bold text-blue-600 bg-blue-50 border-b">
                                 Jumlah Pendaftar per Jurusan
                             </th>
-                            <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-600 border-b">Total</th>
-                            <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-600 border-b">Aksi</th>
+
+                            <th rowspan="2"
+                                class="px-4 py-3 text-center text-xs font-bold text-gray-600 border-b">
+                                Total
+                            </th>
+
+                            <th rowspan="2"
+                                class="px-4 py-3 text-center text-xs font-bold text-gray-600 border-b">
+                                Aksi
+                            </th>
                         </tr>
 
                         <tr>
-                            @foreach($jurusans as $jurusan)
+                            @foreach($jurusansRingkasan as $jurusan)
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 border-b whitespace-nowrap">
-                                    {{ $jurusan->nama_jurusan ?? $jurusan->nama }}
+                                    {{ $jurusan->nama_jurusan }}
                                 </th>
                             @endforeach
                         </tr>
+
                     </thead>
 
                     <tbody>
-                        @foreach($ringkasanCabangJurusan as $index => $cabang)
+                        @forelse($ringkasanCabangJurusan as $index => $cabang)
+
                             <tr class="border-t hover:bg-gray-50">
-                                <td class="px-4 py-3.5 text-gray-500">{{ $index + 1 }}</td>
+
+                                <td class="px-4 py-3.5 text-gray-500">
+                                    {{ $index + 1 }}
+                                </td>
 
                                 <td class="px-4 py-3.5 font-semibold text-gray-900">
                                     {{ $cabang->nama_cabang }}
                                 </td>
 
-                                @foreach($jurusans as $jurusan)
+                                @foreach($jurusansRingkasan as $jurusan)
+
+                                    @php
+                                        $jumlah = $cabang->pendaftarans
+                                            ->filter(function ($pendaftaran) use ($jurusan) {
+                                                return optional($pendaftaran->jurusan)->nama_jurusan
+                                                    === $jurusan->nama_jurusan;
+                                            })
+                                            ->count();
+                                    @endphp
+
                                     <td class="px-4 py-3.5 text-center text-gray-700">
-                                        {{ $cabang->pendaftarans->where('jurusan_id', $jurusan->id)->count() }}
+                                        {{ $jumlah }}
                                     </td>
+
                                 @endforeach
 
                                 <td class="px-4 py-3.5 text-center font-extrabold text-blue-600">
@@ -332,31 +411,57 @@
                                 </td>
 
                                 <td class="px-4 py-3.5 text-center">
-                                    <a href="{{ route('pendaftaran.index', ['cabang_id' => $cabang->id]) }}"
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                                    <a href="{{ route('admin.pendaftaran.index', ['cabang_id' => $cabang->id]) }}"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
                                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                                     </a>
                                 </td>
+
                             </tr>
-                        @endforeach
+
+                        @empty
+
+                            <tr>
+                                <td colspan="{{ $jurusansRingkasan->count() + 4 }}"
+                                    class="px-4 py-10 text-center text-gray-500">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+
+                        @endforelse
                     </tbody>
 
                     <tfoot class="bg-gray-50">
-                        <tr class="border-t-2 border-gray-200 font-extrabold text-blue-600">
-                            <td colspan="2" class="px-4 py-3.5">Total</td>
 
-                            @foreach($jurusans as $jurusan)
+                        <tr class="border-t-2 border-gray-200 font-extrabold text-blue-600">
+
+                            <td colspan="2" class="px-4 py-3.5">
+                                Total
+                            </td>
+
+                            @foreach($jurusansRingkasan as $jurusan)
+
                                 <td class="px-4 py-3.5 text-center">
-                                    {{ $pendaftarPerJurusan->where('id', $jurusan->id)->first()->total ?? 0 }}
+
+                                    {{
+                                        $pendaftarPerJurusan
+                                            ->where('nama_jurusan', $jurusan->nama_jurusan)
+                                            ->first()
+                                            ?->total ?? 0
+                                    }}
+
                                 </td>
+
                             @endforeach
 
                             <td class="px-4 py-3.5 text-center">
-                                {{ number_format($totalPendaftar ?? 0, 0, ',', '.') }}
+                                {{ number_format($totalPendaftar, 0, ',', '.') }}
                             </td>
 
                             <td></td>
+
                         </tr>
+
                     </tfoot>
                 </table>
             </div>
@@ -370,8 +475,29 @@
         const cabangLabels = @json($pendaftarPerCabang->pluck('nama_cabang') ?? []);
         const cabangData = @json($pendaftarPerCabang->pluck('total') ?? []);
 
-        const jurusanLabels = @json($pendaftarPerJurusan->pluck('nama_jurusan') ?? []);
-        const jurusanData = @json($pendaftarPerJurusan->pluck('total') ?? []);
+        @php
+            $jurusanChartLabels = $pendaftarPerJurusan
+                ->pluck('nama_jurusan')
+                ->merge($alumniPerJurusan->pluck('nama_jurusan'))
+                ->unique()
+                ->values();
+
+            $jurusanPendaftarData = $jurusanChartLabels->map(function ($namaJurusan) use ($pendaftarPerJurusan) {
+                return $pendaftarPerJurusan
+                    ->firstWhere('nama_jurusan', $namaJurusan)
+                    ?->total ?? 0;
+            });
+
+            $jurusanAlumniData = $jurusanChartLabels->map(function ($namaJurusan) use ($alumniPerJurusan) {
+                return $alumniPerJurusan
+                    ->firstWhere('nama_jurusan', $namaJurusan)
+                    ?->total ?? 0;
+            });
+        @endphp
+
+        const jurusanLabels = @json($jurusanChartLabels);
+        const jurusanPendaftarData = @json($jurusanPendaftarData);
+        const jurusanAlumniData = @json($jurusanAlumniData);
 
         const bulanLabels = @json(($pendaftarPerBulan ?? collect())->pluck('bulan'));
         const bulanData = @json(($pendaftarPerBulan ?? collect())->pluck('total'));
@@ -399,29 +525,62 @@
         });
 
         new Chart(document.getElementById('donutChart'), {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: jurusanLabels,
-                datasets: [{
-                    data: jurusanData,
-                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
+                datasets: [
+                    {
+                        label: 'Pendaftar',
+                        data: jurusanPendaftarData,
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6,
+                        barThickness: 14
+                    },
+                    {
+                        label: 'Alumni',
+                        data: jurusanAlumniData,
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 6,
+                        barThickness: 14
+                    }
+                ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '62%',
                 plugins: {
                     legend: {
-                        position: 'right',
-                        labels: { boxWidth: 10, font: { size: 11 } }
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            color: '#f3f4f6'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value) {
+                                const label = this.getLabelForValue(value);
+                                return label.length > 28 ? label.substring(0, 28) + '...' : label;
+                            }
+                        }
                     }
                 }
             }
         });
-
         new Chart(document.getElementById('lineChart'), {
             type: 'line',
             data: {

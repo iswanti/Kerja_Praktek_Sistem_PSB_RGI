@@ -16,12 +16,17 @@ class Wawancara extends Model
 
         // Operator
         'nama_operator',
+        'rekomendasi',
         'rekomendasi_operator',
 
         // Manajemen
         'nama_pewawancara_manajemen',
+        'pekerjaan_ayah',
+        'pekerjaan_ibu',
         'pendapatan_orangtua',
         'pelanggaran_berat',
+        'motivasi',
+        'riwayat_penyakit',
         'kondisi_rumah',
         'tingkat_keduafaan',
         'catatan_manajemen',

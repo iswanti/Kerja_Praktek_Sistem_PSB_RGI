@@ -20,12 +20,17 @@ return new class extends Migration
 
             // Operator
             $table->string('nama_operator')->nullable();
+            $table->string('rekomendasi')->nullable();
             $table->string('rekomendasi_operator')->nullable();
 
             // Manajemen
             $table->string('nama_pewawancara_manajemen')->nullable();
+            $table->string('pekerjaan_ayah')->nullable();
+            $table->string('pekerjaan_ibu')->nullable();
             $table->string('pendapatan_orangtua')->nullable();
             $table->string('pelanggaran_berat')->nullable();
+            $table->string('motivasi')->nullable();
+            $table->string('riwayat_penyakit')->nullable();
             $table->string('kondisi_rumah')->nullable();
             $table->string('tingkat_keduafaan')->nullable();
             $table->text('catatan_manajemen')->nullable();

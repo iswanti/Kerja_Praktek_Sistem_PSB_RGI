@@ -6,83 +6,164 @@
     <!-- Primary Navigation Menu -->
     <div class="w-full px-6 sm:px-8 lg:px-10">
         <div class="flex justify-between items-center h-20">
-
            @php
-                if (request()->routeIs('dashboard')) {
+                use App\Models\Menu;
+                $routeName = request()->route()?->getName();
+                $currentMenu = Menu::where('route', $routeName)->first();
+                if (!$currentMenu && $routeName) {
+                    $routeMap = [
+                        'admin.pendaftaran.create' => 'admin.pendaftaran.index',
+                        'admin.pendaftaran.edit'   => 'admin.pendaftaran.index',
+                        'admin.pendaftaran.show'   => 'admin.pendaftaran.index',
+
+                        'admin.alumni.create'      => 'admin.alumni.index',
+                        'admin.alumni.edit'        => 'admin.alumni.index',
+
+                        'admin.gelombang.create'   => 'admin.gelombang.index',
+                        'admin.gelombang.edit'     => 'admin.gelombang.index',
+
+                        'admin.users.create'       => 'admin.users.index',
+                        'admin.users.edit'         => 'admin.users.index',
+
+                        'admin.roles.create'       => 'admin.roles.index',
+                        'admin.roles.edit'         => 'admin.roles.index',
+                        'admin.roles.show'         => 'admin.roles.index',
+
+                        'admin.soal.create'        => 'admin.soal.index',
+                        'admin.soal.edit'          => 'admin.soal.index',
+
+                        'admin.wawancara.show'     => 'admin.wawancara.index',
+                        'admin.wawancara.edit'     => 'admin.wawancara.index',
+                    ];
+
+                    $parentRoute = $routeMap[$routeName] ?? null;
+
+                    if ($parentRoute) {
+                        $currentMenu = Menu::where('route', $parentRoute)->first();
+                    }
+                }
+
+                $menuName = $currentMenu?->nama ?? 'Dashboard';
+                $actionName = null;
+                if (str_ends_with($routeName, '.create')) {
+                    $actionName = 'Tambah Data';
+                } elseif (str_ends_with($routeName, '.edit')) {
+                    $actionName = 'Edit Data';
+                } elseif (str_ends_with($routeName, '.show')) {
+                    $actionName = 'Detail Data';
+                }
+
+                $breadcrumb = $actionName
+                    ? $menuName . ' / ' . $actionName
+                    : $menuName;
+
+                if (request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')) {
                     $menuName = 'Dashboard';
-                } elseif (request()->routeIs('pendaftaran.*')) {
-                    $menuName = 'Data Pendaftaran';
-                } elseif (request()->routeIs('wawancara.*')) {
-                    $menuName = 'Data Wawancara';
-                } elseif (request()->routeIs('seleksi.*')) {
-                    $menuName = 'Data Seleksi';
-                } else {
-                    $menuName = 'Pengumuman';
+                    $breadcrumb = 'Ringkasan data pendaftaran calon siswa berdasarkan cabang dan jurusan';
                 }
             @endphp
-
             <!-- Judul Halaman -->
             <div class="flex flex-col">
                 <h1 class="text-2xl font-bold text-white">
                     {{ $menuName }}
                 </h1>
 
-                <!-- Breadcrumb -->
                 <p class="text-sm text-blue-100 mt-1">
-                    @if (request()->routeIs('pendaftaran.create'))
-                        <a href="{{ route('pendaftaran.index') }}"
-                        class="hover:underline">
-                            Data Pendaftaran
-                        </a>
-                        <span class="mx-1">/</span>
-                        <span>Tambah Data</span>
-
-                    @elseif (request()->routeIs('pendaftaran.edit'))
-                        <a href="{{ route('pendaftaran.index') }}"
-                        class="hover:underline">
-                            Data Pendaftaran
-                        </a>
-                        <span class="mx-1">/</span>
-                        <span>Edit Data</span>
-
-                    @elseif (request()->routeIs('pendaftaran.show'))
-                        <a href="{{ route('pendaftaran.index') }}"
-                        class="hover:underline">
-                            Data Pendaftaran
-                        </a>
-                        <span class="mx-1">/</span>
-                        <span>Detail Data</span>
-
-                    @elseif (request()->routeIs('pendaftaran.index'))
-                        <span>Data Pendaftaran</span>
-
-                    @elseif (request()->routeIs('wawancara.*'))
-                        <span>Data Wawancara</span>
-
-                    @elseif (request()->routeIs('seleksi.*'))
-                        <span>Data Seleksi</span>
-
-                    @elseif (request()->routeIs('dashboard'))
-                        <span>Dashboard</span>
-
-                    @else
-                        <span>Pengumuman</span>
-                    @endif
+                    {{ $breadcrumb }}
                 </p>
             </div>
 
             <!-- Right Menu -->
             <div class="hidden sm:flex sm:items-center space-x-4">
+                @php
+                    $unreadCount = auth()->user()->unreadNotifications()->count();
 
-                <!-- Notifikasi -->
-                <button
-                    class="relative p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span
-                        class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                        3
-                    </span>
-                </button>
+                    $notifications = auth()->user()
+                        ->notifications()
+                        ->latest()
+                        ->take(10)
+                        ->get();
+                @endphp
+
+                <x-dropdown align="right" width="80">
+
+                    <x-slot name="trigger">
+                        <button
+                            class="relative p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+
+                            @if($unreadCount > 0)
+                                <span
+                                    class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                                    {{ $unreadCount }}
+                                </span>
+                            @endif
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+
+                        <div class="w-80 max-h-96 overflow-y-auto bg-white">
+
+                            <div class="px-4 py-3 border-b">
+                                <h3 class="font-bold text-sm text-gray-800">
+                                    Notifikasi
+                                </h3>
+                            </div>
+
+                            @forelse($notifications as $notification)
+
+                                <form method="POST"
+                                    action="{{ route('notifications.read', $notification->id) }}">
+                                    @csrf
+
+                                    <button type="submit"
+                                            class="w-full text-left">
+
+                                        <div class="px-4 py-3 border-b hover:bg-gray-50 {{ is_null($notification->read_at) ? 'bg-blue-50' : '' }}">
+
+                                            <div class="flex gap-3">
+
+                                                <div class="mt-1">
+                                                    <i data-lucide="{{ $notification->data['icon'] ?? 'bell' }}"
+                                                    class="w-5 h-5"></i>
+                                                </div>
+
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-semibold text-gray-800">
+                                                        {{ $notification->data['title'] ?? 'Notifikasi' }}
+                                                    </p>
+
+                                                    <p class="text-xs text-gray-500 mt-1">
+                                                        {{ $notification->data['body'] ?? '-' }}
+                                                    </p>
+
+                                                    <p class="text-[11px] text-gray-400 mt-2">
+                                                        {{ $notification->created_at->diffForHumans() }}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </button>
+
+                                </form>
+
+                            @empty
+
+                                <div class="px-4 py-6 text-center text-sm text-gray-500">
+                                    Belum ada notifikasi
+                                </div>
+
+                            @endforelse
+
+                        </div>
+
+                    </x-slot>
+
+                </x-dropdown>
 
                 <!-- Dropdown Profile -->
                 <x-dropdown align="right" width="48">

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Pendaftaran;
 
 class ProfileController extends Controller
 {
@@ -16,9 +18,14 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+
+        $pendaftaran = \App\Models\Pendaftaran::with(['jurusan', 'cabang'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        return view('profile.edit', compact('user', 'pendaftaran'));
     }
 
     /**
@@ -56,5 +63,36 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'pas_foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $pendaftaran = Pendaftaran::where('user_id', auth()->id())
+            ->latest()
+            ->first();
+
+        if (!$pendaftaran) {
+            return back()->withErrors([
+                'pas_foto' => 'Data pendaftaran tidak ditemukan.'
+            ]);
+        }
+
+        if ($pendaftaran->pas_foto &&
+            Storage::disk('public')->exists($pendaftaran->pas_foto)) {
+
+            Storage::disk('public')->delete($pendaftaran->pas_foto);
+        }
+
+        $path = $request->file('pas_foto')
+            ->store('pas-foto', 'public');
+
+        $pendaftaran->update([
+            'pas_foto' => $path
+        ]);
+
+        return back()->with('success', 'Pas foto berhasil diperbarui.');
     }
 }

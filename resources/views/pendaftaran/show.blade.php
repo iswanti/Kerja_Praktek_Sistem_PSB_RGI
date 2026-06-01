@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="w-full mx-auto sm:px-6 lg:px-8 py-8">
+    <div class="w-full mx-auto py-5">
         <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
             {{-- HEADER --}}
             <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-6">
@@ -12,12 +12,13 @@
                     <div class="flex flex-wrap items-center gap-3">
                         @php
                             $statusLabels = [
-                                'menunggu_verifikasi' => ['text' => 'Menunggu Verifikasi', 'class' => 'bg-yellow-100 text-yellow-700'],
-                                'terverifikasi' => ['text' => 'Terverifikasi', 'class' => 'bg-green-100 text-green-700'],
-                                'seleksi_pretest' => ['text' => 'Seleksi Pretest', 'class' => 'bg-blue-100 text-blue-700'],
-                                'wawancara' => ['text' => 'Wawancara', 'class' => 'bg-purple-100 text-purple-700'],
+                                'menunggu_verifikasi'        => ['text' => 'Menunggu Verifikasi',        'class' => 'bg-yellow-100 text-yellow-700'],
+                                'seleksi_pretest'            => ['text' => 'Seleksi Pretest',            'class' => 'bg-blue-100 text-blue-700'],
+                                'wawancara'                  => ['text' => 'Wawancara',                  'class' => 'bg-purple-100 text-purple-700'],
                                 'verifikasi_kelulusan_siswa' => ['text' => 'Verifikasi Kelulusan Siswa', 'class' => 'bg-teal-100 text-teal-700'],
-                                'ditolak' => ['text' => 'Ditolak', 'class' => 'bg-red-100 text-red-700'],
+                                'diterima'                   => ['text' => 'Diterima',                   'class' => 'bg-green-100 text-green-700'],
+                                'cadangan'                   => ['text' => 'Cadangan',                   'class' => 'bg-amber-100 text-amber-700'],
+                                'ditolak'                    => ['text' => 'Ditolak',                    'class' => 'bg-red-100 text-red-700'],
                             ];
 
                             $status = $statusLabels[$pendaftaran->status] ?? [
@@ -25,13 +26,14 @@
                                 'class' => 'bg-yellow-100 text-yellow-700'
                             ];
                         @endphp
+                        
 
                         <span class="px-4 py-2 rounded-full text-sm font-semibold {{ $status['class'] }}">
                             {{ $status['text'] }}
                         </span>
 
-                        <a href="{{ route('pendaftaran.index') }}"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition">
+                        <a href="{{ Auth::user()->role === 'admin' ? route('admin.pendaftaran.index') : route('dashboard') }}"
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold transition">
                             <i data-lucide="arrow-left" class="w-4 h-4"></i>
                             Kembali
                         </a>
@@ -42,41 +44,159 @@
             <div class="p-8 space-y-10">
 
                 {{-- VERIFIKASI --}}
-                @if($pendaftaran->status == 'menunggu_verifikasi')
-                    <div class="p-5 rounded-2xl bg-yellow-50 border border-yellow-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                @php
+                    $alurBerikutnya = [
+                        'seleksi_pretest' => ['status' => 'wawancara',                  'label' => 'Lanjut ke Wawancara'],
+                        'wawancara'       => ['status' => 'verifikasi_kelulusan_siswa', 'label' => 'Lanjut ke Verifikasi Kelulusan'],
+                    ];
+
+                    $isAwal      = $pendaftaran->status === 'menunggu_verifikasi';
+                    $isTengah    = isset($alurBerikutnya[$pendaftaran->status]);
+                    $isKelulusan = $pendaftaran->status === 'verifikasi_kelulusan_siswa';
+                    $isCadangan  = $pendaftaran->status === 'cadangan'; // ← tambah
+                    $isFinal     = in_array($pendaftaran->status, ['diterima', 'ditolak']); // ← hapus cadangan dari sini
+                    $next        = $alurBerikutnya[$pendaftaran->status] ?? null;
+                    $isAdmin     = in_array(Auth::user()->role?->nama, ['Admin', 'Superadmin']);
+
+                    $tampilkanPanel = !$isFinal && $isAdmin && (
+                        $isAwal ||
+                        $isTengah ||
+                        ($isKelulusan && $verifikasiKelulusanAktif) ||
+                        ($isCadangan && $verifikasiKelulusanAktif) // ← tambah
+                    );
+                @endphp
+
+                @if($tampilkanPanel)
+                    <div class="p-5 rounded-2xl border flex flex-col md:flex-row md:items-center md:justify-between gap-4
+                        {{ $isKelulusan ? 'bg-teal-50 border-teal-200' : ($isCadangan ? 'bg-amber-50 border-amber-200' : 'bg-yellow-50 border-yellow-200') }}">
+
                         <div>
-                            <h3 class="font-bold text-gray-900">Verifikasi Pendaftaran</h3>
-                            <p class="text-sm text-gray-500">
-                                Setujui atau tolak pendaftaran setelah memeriksa data.
-                            </p>
+                            @if($isAwal)
+                                <h3 class="font-bold text-gray-900">Verifikasi Pendaftaran</h3>
+                                <p class="text-sm text-gray-500">Setujui atau tolak pendaftaran setelah memeriksa data.</p>
+                            @elseif($isTengah)
+                                <h3 class="font-bold text-gray-900">{{ $next['label'] }}</h3>
+                                <p class="text-sm text-gray-500">Lanjutkan proses ke tahap berikutnya.</p>
+                            @elseif($isKelulusan)
+                                <h3 class="font-bold text-gray-900">Verifikasi Kelulusan</h3>
+                                <p class="text-sm text-gray-500">Tentukan keputusan akhir penerimaan peserta ini.</p>
+                            @elseif($isCadangan)
+                                <h3 class="font-bold text-gray-900">Peserta Cadangan</h3>
+                                <p class="text-sm text-gray-500">Tentukan apakah peserta cadangan ini akhirnya diterima atau tidak.</p>
+                            @endif
                         </div>
 
-                        <div class="flex gap-3">
-                            {{-- SETUJUI --}}
-                            <form action="{{ route('pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="status" value="terverifikasi">
+                        <div class="flex flex-wrap gap-3">
 
-                                <button type="submit"
-                                        onclick="return confirm('Setujui pendaftaran ini?')"
-                                        class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
-                                    <i data-lucide="badge-check" class="w-4 h-4"></i>
-                                    Setujui
-                                </button>
-                            </form>
+                            @if($isAwal)
+                                <form id="lanjutForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="seleksi_pretest">
+                                    <button type="button" onclick="confirmLanjut('Verifikasi pendaftaran ini?', 'lanjutForm')"
+                                            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="badge-check" class="w-4 h-4"></i> Verifikasi
+                                    </button>
+                                </form>
+                                <form id="tolakForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="ditolak">
+                                    <input type="hidden" name="alasan_ditolak" id="alasan_ditolak">
+                                    <button type="button" onclick="confirmTolak()"
+                                            class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="x-circle" class="w-4 h-4"></i> Tolak
+                                    </button>
+                                </form>
 
-                            {{-- TOLAK --}}
-                            <form action="{{ route('pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="status" value="ditolak">
+                            @elseif($isTengah)
+                                <form id="lanjutForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="{{ $next['status'] }}">
+                                    <button type="button" onclick="confirmLanjut('{{ $next['label'] }}', 'lanjutForm')"
+                                            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> {{ $next['label'] }}
+                                    </button>
+                                </form>
 
-                                <button type="submit"
-                                        onclick="return confirm('Tolak pendaftaran ini?')"
-                                        class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
-                                    <i data-lucide="x-circle" class="w-4 h-4"></i>
-                                    Tolak
-                                </button>
-                            </form>
+                            @elseif($isKelulusan)
+                                <form id="diterimaForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="diterima">
+                                    <button type="button" onclick="confirmLanjut('Terima peserta ini', 'diterimaForm')"
+                                            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i> Diterima
+                                    </button>
+                                </form>
+                                <form id="cadanganForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="cadangan">
+                                    <button type="button" onclick="confirmLanjut('Jadikan peserta ini cadangan', 'cadanganForm')"
+                                            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="bookmark" class="w-4 h-4"></i> Cadangan
+                                    </button>
+                                </form>
+                                <form id="tolakForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="ditolak">
+                                    <input type="hidden" name="alasan_ditolak" id="alasan_ditolak">
+                                    <button type="button" onclick="confirmTolak()"
+                                            class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="x-circle" class="w-4 h-4"></i> Tidak Lulus
+                                    </button>
+                                </form>
+                            @elseif($isCadangan)
+                                <form id="diterimaForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="diterima">
+                                    <button type="button" onclick="confirmLanjut('Terima peserta cadangan ini?', 'diterimaForm')"
+                                            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i> Diterima
+                                    </button>
+                                </form>
+
+                                <form id="tolakForm" action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="ditolak">
+                                    <input type="hidden" name="alasan_ditolak" id="alasan_ditolak">
+                                    <button type="button" onclick="confirmTolak()"
+                                            class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                                        <i data-lucide="x-circle" class="w-4 h-4"></i> Tidak Diterima
+                                    </button>
+                                </form>
+                            @endif
+
+                        </div>
+                    </div>
+
+                {{-- Panel kelulusan belum waktunya --}}
+                @elseif($isKelulusan && $isAdmin && !$verifikasiKelulusanAktif)
+                    <div class="p-5 rounded-2xl bg-blue-50 border border-blue-200 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Verifikasi Kelulusan Belum Dibuka</h3>
+                            <p class="text-sm text-gray-500">
+                                Jadwal verifikasi kelulusan belum tiba.
+                                @if($pendaftaran->gelombang?->pengumuman_mulai)
+                                    Dibuka pada:
+                                    <span class="font-semibold text-blue-700">
+                                        {{ \Carbon\Carbon::parse($pendaftaran->gelombang->pengumuman_mulai)->translatedFormat('d F Y H:i') }}
+                                    </span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Alasan ditolak --}}
+                @if($pendaftaran->status === 'ditolak' && $pendaftaran->alasan_ditolak)
+                    <div class="p-5 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-red-800">Alasan Penolakan</h3>
+                            <p class="text-sm text-red-700 mt-1">{{ $pendaftaran->alasan_ditolak }}</p>
                         </div>
                     </div>
                 @endif
@@ -97,10 +217,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <x-detail-item label="Kampus" :value="$pendaftaran->cabang?->nama_cabang ?? '-'" />
                         <x-detail-item label="Jurusan" :value="$pendaftaran->jurusan?->nama_jurusan ?? $pendaftaran->jurusan?->nama ?? '-'" />
-                        <x-detail-item label="Pendidikan Terakhir" :value="$pendaftaran->pendidikan" />
-                        <x-detail-item label="Nama Sekolah" :value="$pendaftaran->sekolah" />
-                        <x-detail-item label="Cita-cita" :value="$pendaftaran->cita_cita" />
-                        <x-detail-item label="Hobi" :value="is_array($pendaftaran->hobi) ? implode(', ', $pendaftaran->hobi) : $pendaftaran->hobi" />
+                        
                     </div>
                 </div>
 
@@ -127,6 +244,10 @@
                         <x-detail-item label="Jenis Kelamin" :value="$pendaftaran->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan'" />
                         <x-detail-item label="Anak Ke" :value="$pendaftaran->anak_ke" />
                         <x-detail-item label="No HP" :value="$pendaftaran->no_hp" />
+                        <x-detail-item label="Pendidikan Terakhir" :value="$pendaftaran->pendidikan" />
+                        <x-detail-item label="Nama Sekolah" :value="$pendaftaran->sekolah" />
+                        <x-detail-item label="Cita-cita" :value="$pendaftaran->cita_cita" />
+                        <x-detail-item label="Hobi" :value="is_array($pendaftaran->hobi) ? implode(', ', $pendaftaran->hobi) : $pendaftaran->hobi" />
                         <x-detail-item label="Penyakit" :value="$pendaftaran->penyakit ?? '-'" />
                     </div>
                     <div class="mt-5">
@@ -235,11 +356,10 @@
                                     'pas_foto'    => 'Pas Foto',
                                     'foto_kk'     => 'Kartu Keluarga',
                                     'foto_ktp'    => 'KTP',
-                                    'foto_ijazah' => 'Ijazah',
-                                    'sktm'        => 'SKTM',
+                                    'foto_ijazah' => 'Ijazah Terakhir',
+                                    'sktm'        => 'SKTM (Surat Keterangan Tidak Mampu) / DKM',
                                     'surat_sehat' => 'Surat Sehat',
-                                    'foto_rumah'  => 'Foto Rumah',
-                                    'surat_vaksin'=> 'Surat Vaksin',
+                                    'foto_rumah'  => 'Foto Rumah ( Fotokan seluruh ruangan rumah dalam bentuk grid)',
                                 ];
                             @endphp
 

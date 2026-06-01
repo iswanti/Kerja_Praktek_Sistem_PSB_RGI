@@ -26,13 +26,6 @@
                 </div>
 
                 <!-- Password -->
-                {{-- <div class="mb-2">
-                    <label class="text-sm font-semibold text-gray-700">Password</label>
-                    <input type="password" name="password" required autocomplete="current-password" class="w-full mt-1 px-4 py-3 rounded-xl bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400"
-                    >
-                    <x-input-error :messages="$errors->get('password')" class="mt-2 text-xs text-red-500"/>
-                </div> --}}
-                <!-- Password -->
                 <div class="mb-2">
                     <label class="text-sm font-semibold text-gray-700">Password</label>
 

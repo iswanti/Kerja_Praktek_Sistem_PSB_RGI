@@ -7,24 +7,25 @@ document.addEventListener("alpine:init", () => {
 
         initData(data, selectedKampus = "", selectedJurusan = "") {
             this.cabangs = data;
-            this.kampus = selectedKampus ? String(selectedKampus) : "";
 
-            this.setJurusanList();
+            setTimeout(() => {
+                this.kampus = selectedKampus ? String(selectedKampus) : "";
 
-            this.jurusan = selectedJurusan ? String(selectedJurusan) : "";
+                this.setJurusanList();
+
+                setTimeout(() => {
+                    this.jurusan = selectedJurusan
+                        ? String(selectedJurusan)
+                        : "";
+                }, 50);
+            }, 50);
         },
-
         setJurusanList() {
             const selected = this.cabangs.find(
                 (c) => String(c.id) === String(this.kampus),
             );
 
-            this.jurusanList = selected
-                ? selected.jurusans ||
-                  selected.jurusan ||
-                  selected.jurusan_cabang ||
-                  []
-                : [];
+            this.jurusanList = selected ? selected.jurusans || [] : [];
         },
 
         updateJurusan() {

@@ -9,7 +9,7 @@
             </div>
 
             <div class="p-8">
-                <form action="{{ route('pendaftaran.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="formPendaftaran" action="{{ auth()->user()->role?->nama === 'Admin' ? route('admin.pendaftaran.store') : route('pendaftaran.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     @if ($errors->any())
@@ -40,6 +40,8 @@
 
                     <div class="space-y-10">
 
+                        <input type="hidden" name="gelombang_id" value="{{ $gelombang->id }}">
+
                         <!-- Section: Kampus dan Jurusan -->
                         <div>
                             <div class="flex items-center gap-3 mb-1">
@@ -54,13 +56,13 @@
                                 </div>
                             </div>
 
-                            <div x-data="kampusJurusan()" x-init='initData(@json($cabangs))' class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                            <div x-data="kampusJurusan()" x-init='initData( @json($cabangs), @json((string)old('cabang_id')), @json((string)old('jurusan_id')) )' class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Kampus <span class="text-red-500">*</span></label>
                                     <select x-model="kampus" @change="updateJurusan()" name="cabang_id" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5">
                                         <option value="">Pilih Kampus</option>
                                         <template x-for="c in cabangs" :key="c.id">
-                                            <option :value="c.id" x-text="c.nama_cabang"></option>
+                                            <option :value="String(c.id)" x-text="c.nama_cabang"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -69,7 +71,7 @@
                                     <select name="jurusan_id" x-model="jurusan" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5 disabled:bg-gray-50 disabled:text-gray-400" :disabled="!kampus">
                                         <option value="">Pilih Jurusan</option>
                                         <template x-for="j in jurusanList" :key="j.id">
-                                            <option :value="j.id" x-text="j.nama_jurusan"></option>
+                                            <option :value="String(j.id)" x-text="j.nama_jurusan"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -93,27 +95,29 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Induk Kependudukan <span class="text-red-500">*</span></label>
-                                    <input type="text" name="nik" maxlength="16" placeholder="Masukkan 16 digit NIK" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="nik" maxlength="16" placeholder="Masukkan 16 digit NIK" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nik') }}">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Kartu Keluarga <span class="text-red-500">*</span></label>
-                                    <input type="text" name="nkk" maxlength="16" placeholder="Masukkan 16 digit NKK" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="nkk" maxlength="16" placeholder="Masukkan 16 digit NKK" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nkk') }}">
                                 </div>
+                                
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
-                                    <input type="text" name="nama" placeholder="Nama sesuai KTP" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nama') }}">
+                                    
+                                    <input type="text" name="nama" value="{{ old('nama', auth()->user()->role?->nama === 'Siswa' ? auth()->user()->name : '' ) }}" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Tempat Lahir <span class="text-red-500">*</span></label>
-                                    <input type="text" name="tempat_lahir" placeholder="Kota tempat lahir" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="tempat_lahir" placeholder="Kota tempat lahir" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('tempat_lahir') }}">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Lahir <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tgl_lahir" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="date" name="tgl_lahir"  id="tgl_lahir" value="{{ old('tgl_lahir') }}" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Umur <span class="text-red-500">*</span></label>
-                                    <input type="number" name="umur" placeholder="Usia saat ini" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="number" name="umur" id = "umur" value="{{ old('umur') }}" readonly class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Jenis Kelamin <span class="text-red-500">*</span></label>
@@ -130,17 +134,18 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Anak Ke <span class="text-red-500">*</span></label>
-                                    <input type="number" name="anak_ke" placeholder="Contoh: 1, 2, 3..." class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="number" name="anak_ke" placeholder="Contoh: 1, 2, 3..." class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('anak_ke') }}">
                                 </div>
                             </div>
 
                             <div class="mt-5">
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Alamat Lengkap <span class="text-red-500">*</span></label>
-                                <input type="text" name="alamat" placeholder="Jalan, RT/RW, Nomor rumah..." class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                <input type="text" name="alamat" placeholder="Jalan, RT/RW, Nomor rumah..." class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('alamat') }}">
                             </div>
 
                             <!-- Wilayah -->
-                            <div x-data="wilayah()" x-init="getProvinsi()" class="mt-5 space-y-5">
+                            {{-- <div x-data="wilayah()" x-init="getProvinsi()" class="mt-5 space-y-5"> --}}
+                            <div x-data="wilayah()" x-init="initWilayah('{{ old('id_alamat') }}')" class="mt-5 space-y-5">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Provinsi <span class="text-red-500">*</span></label>
@@ -167,6 +172,7 @@
                                         <select x-model="kecamatan" @change="pilihKecamatan()" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400" :disabled="!kabupaten">
                                             <option value="">Pilih Kecamatan</option>
                                             <template x-for="kec in kecamatans" :key="kec.code">
+                                                {{-- <option :value="String(kec.code).trim()" x-text="kec.name"></option> --}}
                                                 <option :value="kec.code" x-text="kec.name"></option>
                                             </template>
                                         </select>
@@ -209,34 +215,61 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Sekolah <span class="text-red-500">*</span></label>
-                                    <input type="text" name="sekolah" placeholder="Nama sekolah terakhir" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="sekolah" placeholder="Nama sekolah terakhir" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('sekolah') }}">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Cita-Cita <span class="text-red-500">*</span></label>
-                                    <input type="text" name="cita_cita" placeholder="Apa cita-cita Anda?" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="cita_cita" placeholder="Apa cita-cita Anda?" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('cita_cita') }}">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Handphone / WhatsApp <span class="text-red-500">*</span></label>
                                     <input type="number" name="no_hp" maxlength="13" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 bg-gray-50 text-gray-500 cursor-not-allowed" value="{{ Auth::user()->phone }}" @readonly(true)>
                                     <p class="text-xs text-gray-400 mt-1">Nomor tidak dapat diubah</p>
                                 </div>
-                                <div x-data="{ hobi: @json(old('hobi', [])), lainnya: '{{ old('hobi_lainnya') }}' }">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hobi <span class="text-red-500">*</span></label>
+                                
+                                @php
+                                    $opsiHobi = ['Membaca', 'Olahraga', 'Musik', 'Menulis', 'Traveling'];
+                                    $hobiOld = old('hobi', []);
+                                    if (!is_array($hobiOld)) {
+                                        $hobiOld = explode(',', $hobiOld);
+                                    }
+                                    $hobiOld = array_map('trim', $hobiOld);
+                                    $hobiUtama = array_values(
+                                        array_intersect($hobiOld, $opsiHobi)
+                                    );
+                                    $hobiLainnya = collect($hobiOld)
+                                        ->filter(fn($item) =>
+                                            !in_array($item, $opsiHobi)
+                                            && $item !== ''
+                                        )
+                                        ->first();
+
+                                    if ($hobiLainnya) {
+                                        $hobiUtama[] = 'Lainnya';
+                                    }
+                                @endphp
+
+                                <div x-data="{hobi: @js($hobiUtama), lainnya: @js(old('hobi_lainnya', $hobiLainnya))}">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Hobi <span class="text-red-500">*</span>
+                                    </label>
                                     <div class="grid grid-cols-2 gap-2">
                                         @foreach(['Membaca', 'Olahraga', 'Musik', 'Menulis', 'Traveling', 'Lainnya'] as $h)
-                                        <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                                            <input type="checkbox" value="{{ $h }}" x-model="hobi" name="hobi[]" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500">
-                                            {{ $h }}
-                                        </label>
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                                                <input type="checkbox" value="{{ $h }}" x-model="hobi" name="hobi[]" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500">
+                                                {{ $h }}
+                                            </label>
                                         @endforeach
                                     </div>
                                     <div x-show="hobi.includes('Lainnya')" class="mt-3" x-transition>
-                                        <input type="text" name="hobi_lainnya" placeholder="Sebutkan hobi lainnya" class="w-full border-gray-300 rounded-xl text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" x-model="lainnya">
+                                        <input type="text" name="hobi_lainnya" placeholder="Sebutkan hobi lainnya"
+                                            class="w-full border-gray-300 rounded-xl text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" x-model="lainnya">
                                     </div>
+
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Penyakit Yang Pernah Diderita</label>
-                                    <input type="text" name="penyakit" placeholder="Jika ada, sebutkan penyakitnya" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="penyakit" placeholder="Jika ada, sebutkan penyakitnya" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('penyakit') }}">
                                 </div>
                             </div>
                         </div>
@@ -256,12 +289,12 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Facebook</label>
-                                    <input type="text" name="facebook" placeholder="URL atau nama akun Facebook" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Facebook<span class="text-red-500">*</span></label>
+                                    <input type="text" name="facebook" placeholder="URL atau nama akun Facebook" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('facebook') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Instagram</label>
-                                    <input type="text" name="instagram" placeholder="@username Instagram" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Instagram<span class="text-red-500">*</span></label>
+                                    <input type="text" name="instagram" placeholder="@username Instagram" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('instagram') }}">
                                 </div>
                             </div>
                         </div>
@@ -282,11 +315,11 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ayah / Wali</label>
-                                    <input type="text" name="nama_wali" placeholder="Nama lengkap ayah/wali" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ayah / Wali<span class="text-red-500">*</span></label>
+                                    <input type="text" name="nama_wali" placeholder="Nama lengkap ayah/wali" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nama_wali') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pendidikan Terakhir</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pendidikan Terakhir<span class="text-red-500">*</span></label>
                                     <select name="pendidikan_wali" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Pendidikan Terakhir</option>
                                         <option value="Tidak Sekolah" {{ old('pendidikan_wali') == 'Tidak Sekolah' ? 'selected' : '' }}>Tidak Sekolah</option>
@@ -302,7 +335,7 @@
                                     </select>
                                 </div>
                                 <div x-data="{ pekerjaan_wali: '{{ old('pekerjaan_wali') }}' }">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pekerjaan</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pekerjaan<span class="text-red-500">*</span></label>
                                     <select name="pekerjaan_wali" x-model="pekerjaan_wali" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Pekerjaan</option>
                                         <option value="PNS">PNS</option>
@@ -318,15 +351,15 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon/HP Ayah/Wali</label>
-                                    <input type="number" name="nohp_wali" maxlength="13" placeholder="Nomor HP ayah/wali" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon/HP Ayah/Wali<span class="text-red-500">*</span></label>
+                                    <input type="text" name="nohp_wali" maxlength="13" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" placeholder="Nomor HP ayah/wali" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nohp_wali') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ibu</label>
-                                    <input type="text" name="nama_ibu" placeholder="Nama lengkap ibu" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ibu<span class="text-red-500">*</span></label>
+                                    <input type="text" name="nama_ibu" placeholder="Nama lengkap ibu" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nama_ibu') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pendidikan Terakhir</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pendidikan Terakhir<span class="text-red-500">*</span></label>
                                     <select name="pendidikan_ibu" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Pendidikan Terakhir</option>
                                         <option value="Tidak Sekolah" {{ old('pendidikan_ibu') == 'Tidak Sekolah' ? 'selected' : '' }}>Tidak Sekolah</option>
@@ -342,7 +375,7 @@
                                     </select>
                                 </div>
                                 <div x-data="{ pekerjaan_ibu: '{{ old('pekerjaan_ibu') }}' }">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pekerjaan Ibu</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pekerjaan Ibu<span class="text-red-500">*</span></label>
                                     <select name="pekerjaan_ibu" x-model="pekerjaan_ibu" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Pekerjaan</option>
                                         <option value="PNS">PNS</option>
@@ -358,32 +391,32 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon/HP Ibu</label>
-                                    <input type="number" name="nohp_ibu" maxlength="13" placeholder="Nomor HP ibu" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon/HP Ibu<span class="text-red-500">*</span></label>
+                                    <input type="text" name="nohp_ibu" maxlength="13" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" placeholder="Nomor HP Ibu" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('nohp_ibu') }}">
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Alamat Lengkap Orang Tua</label>
-                                    <textarea name="alamat_orangtua" rows="2" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" placeholder="Masukkan alamat lengkap orang tua di sini..."></textarea>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Alamat Lengkap Orang Tua<span class="text-red-500">*</span></label>
+                                    <textarea name="alamat_orangtua" rows="2" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" placeholder="Masukkan alamat lengkap orang tua di sini...">{{ old('alamat_orangtua') }}</textarea>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah Anggota Keluarga</label>
-                                    <input type="number" name="jml_keluarga" placeholder="Jumlah anggota keluarga" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah Anggota Keluarga<span class="text-red-500">*</span></label>
+                                    <input type="number" name="jml_keluarga" placeholder="Jumlah anggota keluarga" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('jml_keluarga') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Rata-rata Pendapatan Keluarga Setiap Bulan</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Rata-rata Pendapatan Keluarga Setiap Bulan<span class="text-red-500">*</span></label>
                                     <select name="pendapatan_keluarga" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Rata-rata Pendapatan</option>
-                                        <option value="1">&lt; Rp 500.000</option>
-                                        <option value="2">Rp 501.000 - Rp 1.000.000</option>
-                                        <option value="3">Rp 1.000.001 - Rp 1.500.000</option>
-                                        <option value="4">Rp 1.500.001 - Rp 2.000.000</option>
-                                        <option value="5">Rp 2.000.001 - Rp 2.500.000</option>
-                                        <option value="6">Rp 2.500.001 - Rp 3.000.000</option>
-                                        <option value="7">&gt; Rp 3.000.000</option>
-                                        <option value="8">&gt;= UMR/UMP</option>
+                                        <option value="Rp 500.000" {{ old('pendapatan_keluarga') == 'Rp 500.000' ? 'selected' : '' }}>< Rp 500.000</option>
+                                        <option value="Rp 501.000 - Rp 1.000.000" {{ old('pendapatan_keluarga') == 'Rp 501.000 - Rp 1.000.000' ? 'selected' : '' }}>Rp 501.000 - Rp 1.000.000</option>
+                                        <option value="Rp 1.000.001 - Rp 1.500.000" {{ old('pendapatan_keluarga') == 'Rp 1.000.001 - Rp 1.500.000' ? 'selected' : '' }}>Rp 1.000.001 - Rp 1.500.000</option>
+                                        <option value="Rp 1.500.001 - Rp 2.000.000" {{ old('pendapatan_keluarga') == 'Rp 1.500.001 - Rp 2.000.000' ? 'selected' : '' }}>Rp 1.500.001 - Rp 2.000.000</option>
+                                        <option value="Rp 2.000.001 - Rp 2.500.000" {{ old('pendapatan_keluarga') == 'Rp 2.000.001 - Rp 2.500.000' ? 'selected' : '' }}>Rp 2.000.001 - Rp 2.500.000</option>
+                                        <option value="Rp 2.500.001 - Rp 3.000.000" {{ old('pendapatan_keluarga') == 'Rp 2.500.001 - Rp 3.000.000' ? 'selected' : '' }}>Rp 2.500.001 - Rp 3.000.000</option>
+                                        <option value="Rp 3.000.000" {{ old('pendapatan_keluarga') == 'Rp 3.000.000' ? 'selected' : '' }}>> Rp 3.000.000</option>
+                                        <option value="UMR/UMP" {{ old('pendapatan_keluarga') == 'UMR/UMP' ? 'selected' : '' }}>>= UMR/UMP</option>
                                     </select>
                                 </div>
-                                <div x-data="{ status: '', other: '' }" class="space-y-3">
+                                <div x-data="{ status: '{{ old('status_rumah') }}', other: '{{ old('status_lainnya') }}' }" class="space-y-3">
                                     <label class="block text-sm font-medium text-gray-700">Status Rumah <span class="text-red-500">*</span></label>
                                     @foreach(['milik_sendiri' => 'Milik Sendiri', 'sewa' => 'Sewa', 'milik_kerabat' => 'Milik Kerabat', 'lainnya' => 'Lainnya'] as $val => $label)
                                     <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
@@ -415,23 +448,54 @@
                             <div class="space-y-5 mt-5">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Motivasi yang mendorong Anda mengikuti pelatihan keterampilan di RGI adalah:</label>
-                                    <textarea name="motivasi" rows="3" placeholder="Tuliskan motivasi Anda di sini..." class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500"></textarea>
+                                    <textarea name="motivasi" rows="3" placeholder="Tuliskan motivasi Anda di sini..." class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">{{ old('motivasi') }}</textarea>
                                 </div>
-                                <div x-data="{ pengenalan: @json(old('pengenalan', [])), lainnya: '{{ old('pengenalan_lainnya') }}' }">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pertama kali mengetahui Rumah Gemilang Indonesia (RGI) dari:</label>
+                                @php
+                                    $opsiPengenalan = [
+                                        'Social Media', 'Brosur', 'Spanduk', 'Pengurus DKM Masjid', 'Kerabat/Saudara'
+                                    ];
+                                    $pengenalanDb = old('pengenalan', []);
+                                    if (!is_array($pengenalanDb)) {
+                                        $pengenalanDb = explode(',', $pengenalanDb);
+                                    }
+                                    $pengenalanDb = array_map('trim', $pengenalanDb);
+                                    $pengenalanUtama = array_values(
+                                        array_intersect($pengenalanDb, $opsiPengenalan)
+                                    );
+
+                                    $pengenalanLainnya = collect($pengenalanDb)
+                                        ->filter(fn($item) => !in_array($item, $opsiPengenalan) && $item !== '')
+                                        ->first();
+
+                                    if ($pengenalanLainnya) {
+                                        $pengenalanUtama[] = 'Lainnya';
+                                    }
+                                @endphp
+
+                                <div x-data="{pengenalan: @js($pengenalanUtama), lainnya: @js(old('pengenalan_lainnya', $pengenalanLainnya))}">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Pertama kali mengetahui Rumah Gemilang Indonesia (RGI) dari:
+                                    </label>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                        @foreach(['Social Media', 'Brosur', 'Spanduk', 'Pengurus DKM Masjid', 'Kerabat/Saudara', 'Lainnya'] as $p)
-                                        <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                                            <input type="checkbox" value="{{ $p }}" x-model="pengenalan" name="pengenalan[]" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500">
-                                            {{ $p }}
-                                        </label>
+                                        @foreach([ 
+                                            'Social Media', 'Brosur', 'Spanduk', 'Pengurus DKM Masjid', 'Kerabat/Saudara', 'Lainnya'
+                                        ] as $p)
+
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                                                <input type="checkbox" value="{{ $p }}" x-model="pengenalan" name="pengenalan[]" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500">
+                                                {{ $p }}
+                                            </label>
+
                                         @endforeach
+
                                     </div>
+
                                     <div x-show="pengenalan.includes('Lainnya')" class="mt-3" x-transition>
-                                        <input type="text" name="pengenalan_lainnya" placeholder="Sebutkan pengenalan lainnya" class="w-full border-gray-300 rounded-xl text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" x-model="lainnya">
+                                        <input type="text" name="pengenalan_lainnya" x-model="lainnya" placeholder="Sebutkan pengenalan lainnya" class="w-full border-gray-300 rounded-xl text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                     </div>
+
                                 </div>
-                                <div x-data="{ status: '', other: '' }" class="space-y-3">
+                                <div x-data="{ status: '{{ old('alasan') }}', other: '{{ old('alasan_lainnya') }}' }" class="space-y-3">
                                     <label class="block text-sm font-medium text-gray-700">Alasan memilih pendidikan keterampilan di RGI karena:</label>
                                     @foreach(['Kemauan Diri Sendiri', 'Dorongan Orang Tua/Keluarga', 'Dorongan Orang Lain'] as $al)
                                     <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
@@ -449,7 +513,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Pemberi Rekomendasi</label>
-                                    <input type="text" name="rekomendasi" placeholder="Yang merekomendasikan Anda mendaftar ke Rumah Gemilang Indonesia?" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                                    <input type="text" name="rekomendasi" placeholder="Yang merekomendasikan Anda mendaftar ke Rumah Gemilang Indonesia?" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" {{ old('rekomendasi') }} >
                                 </div>
                             </div>
                         </div>
@@ -464,7 +528,7 @@
                                 </div>
                                 <div>
                                     <h2 class="text-lg font-semibold text-gray-800">Upload Dokumen</h2>
-                                    <p class="text-sm text-gray-500">Masukkan dokumen pendukung Anda di sini.</p>
+                                    <p class="text-sm text-gray-500">Masukkan dokumen pendukung Anda di sini, dan pastikan ukuran file berukuran 2.4 MB.</p>
                                 </div>
                             </div>
 
@@ -474,11 +538,10 @@
                                         ['name' => 'pas_foto', 'label' => 'Pas Foto', 'required' => true],
                                         ['name' => 'foto_kk', 'label' => 'Kartu Keluarga', 'required' => true],
                                         ['name' => 'foto_ktp', 'label' => 'Kartu Tanda Penduduk (KTP)', 'required' => true],
-                                        ['name' => 'foto_ijazah', 'label' => 'Ijazah Terakhir', 'required' => true],
-                                        ['name' => 'sktm', 'label' => 'SKTM (Surat Keterangan Tidak Mampu)', 'required' => true],
+                                        ['name' => 'foto_ijazah', 'label' => 'Ijazah Terakhir', 'required' => false],
+                                        ['name' => 'sktm', 'label' => 'SKTM (Surat Keterangan Tidak Mampu) / DKM', 'required' => true],
                                         ['name' => 'surat_sehat', 'label' => 'Surat Keterangan Sehat', 'required' => true],
-                                        ['name' => 'foto_rumah', 'label' => 'Foto Rumah Depan dan Belakang', 'required' => true],
-                                        ['name' => 'surat_vaksin', 'label' => 'Surat Vaksin (Bila Sudah Ada)', 'required' => false],
+                                        ['name' => 'foto_rumah', 'label' => 'Foto Rumah ( Fotokan seluruh ruangan rumah dalam bentuk grid)', 'required' => true],
                                     ];
                                 @endphp
 
@@ -501,7 +564,7 @@
                         <!-- Submit -->
                         <div class="border-t border-gray-100 pt-6 flex items-center justify-between">
                             <p class="text-sm text-gray-400">Pastikan semua data sudah benar sebelum mengirim</p>
-                            <button type="submit" class="px-10 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                            <button type="button" onclick="konfirmasiSubmit()" class="px-10 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
                                 Kirim Pendaftaran
                             </button>
                         </div>
@@ -511,4 +574,46 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function konfirmasiSubmit() {
+            Swal.fire({
+                title: 'Konfirmasi Simpan',
+                text: 'Apakah Anda yakin ingin menyimpan pendaftaran ini? Data yang sudah disimpan tidak dapat diubah kembali.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#312e81',
+                cancelButtonColor: '#ef4444',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl',
+                    confirmButton: 'px-8 py-3 rounded-xl font-semibold',
+                    cancelButton: 'px-8 py-3 rounded-xl font-semibold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formPendaftaran').submit();
+                }
+            });
+        }
+
+        document.getElementById('tgl_lahir').addEventListener('change', function () {
+
+            const birthDate = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (
+                monthDiff < 0 ||
+                (monthDiff === 0 && today.getDate() < birthDate.getDate())
+            ) {
+                age--;
+            }
+            document.getElementById('umur').value = age;
+        });
+    </script>
 </x-app-layout>

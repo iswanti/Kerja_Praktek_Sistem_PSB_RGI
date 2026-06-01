@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Pendaftaran extends Model
 {
     protected $fillable = [
+        'gelombang_id',
+        'user_id',
         'cabang_id',
         'jurusan_id',
         'kode_pendaftaran',
@@ -60,8 +62,9 @@ class Pendaftaran extends Model
         'sktm',
         'surat_sehat',
         'foto_rumah',
-        'surat_vaksin',
         'status',
+        'alasan_ditolak',
+        'nilai_pretest',
     ];
 
     protected $casts = [
@@ -114,6 +117,21 @@ class Pendaftaran extends Model
     public function wawancara()
     {
         return $this->hasOne(Wawancara::class);
+    }
+
+    public function jawabanPeserta()
+    {
+        return $this->hasMany(JawabanPeserta::class);
+    }
+
+    public function gelombang()
+    {
+        return $this->belongsTo(Gelombang::class);
+    }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
     
 }

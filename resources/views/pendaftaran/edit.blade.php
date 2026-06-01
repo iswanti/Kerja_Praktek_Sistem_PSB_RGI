@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="w-full mx-auto sm:px-6 lg:px-8 py-8">
+    <div class="w-full mx-auto py-5 ">
         <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
 
             <!-- Page Header -->
@@ -10,7 +10,7 @@
 
             <div class="p-8">
                 {{-- <form action="{{ route('pendaftaran.store') }}" method="POST" enctype="multipart/form-data"> --}}
-                <form action="{{ route('pendaftaran.update', $pendaftaran->id) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.pendaftaran.update', $pendaftaran->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -421,14 +421,14 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Rata-rata Pendapatan Keluarga Setiap Bulan</label>
                                     <select name="pendapatan_keluarga" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
                                         <option value="">Pilih Rata-rata Pendapatan</option>
-                                        <option value="1" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '1' ? 'selected' : '' }}>&lt; Rp 500.000</option>
-                                        <option value="2" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '2' ? 'selected' : '' }}>Rp 501.000 - Rp 1.000.000</option>
-                                        <option value="3" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '3' ? 'selected' : '' }}>Rp 1.000.001 - Rp 1.500.000</option>
-                                        <option value="4" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '4' ? 'selected' : '' }}>Rp 1.500.001 - Rp 2.000.000</option>
-                                        <option value="5" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '5' ? 'selected' : '' }}>Rp 2.000.001 - Rp 2.500.000</option>
-                                        <option value="6" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '6' ? 'selected' : '' }}>Rp 2.500.001 - Rp 3.000.000</option>
-                                        <option value="7" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '7' ? 'selected' : '' }}>&gt; Rp 3.000.000</option>
-                                        <option value="8" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == '8' ? 'selected' : '' }}>&gt;= UMR/UMP</option>
+                                        <option value="Rp 500.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 500.000' ? 'selected' : '' }}>< Rp 500.000</option>
+                                        <option value="Rp 501.000 - Rp 1.000.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 501.000 - Rp 1.000.000' ? 'selected' : '' }}>Rp 501.000 - Rp 1.000.000</option>
+                                        <option value="Rp 1.000.001 - Rp 1.500.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 1.000.001 - Rp 1.500.000' ? 'selected' : '' }}>Rp 1.000.001 - Rp 1.500.000</option>
+                                        <option value="Rp 1.500.001 - Rp 2.000.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 1.500.001 - Rp 2.000.000' ? 'selected' : '' }}>Rp 1.500.001 - Rp 2.000.000</option>
+                                        <option value="Rp 2.000.001 - Rp 2.500.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 2.000.001 - Rp 2.500.000' ? 'selected' : '' }}>Rp 2.000.001 - Rp 2.500.000</option>
+                                        <option value="Rp 2.500.001 - Rp 3.000.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 2.500.001 - Rp 3.000.000' ? 'selected' : '' }}>Rp 2.500.001 - Rp 3.000.000</option>
+                                        <option value="Rp 3.000.000" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'Rp 3.000.000' ? 'selected' : '' }}>> Rp 3.000.000</option>
+                                        <option value="UMR/UMP" {{ old('pendapatan_keluarga', $pendaftaran->pendapatan_keluarga) == 'UMR/UMP' ? 'selected' : '' }}>>= UMR/UMP</option>
                                     </select>
                                 </div>
 
@@ -569,11 +569,10 @@
                                             ['name' => 'pas_foto', 'label' => 'Pas Foto', 'required' => true],
                                             ['name' => 'foto_kk', 'label' => 'Kartu Keluarga', 'required' => true],
                                             ['name' => 'foto_ktp', 'label' => 'Kartu Tanda Penduduk (KTP)', 'required' => true],
-                                            ['name' => 'foto_ijazah', 'label' => 'Ijazah Terakhir', 'required' => true],
-                                            ['name' => 'sktm', 'label' => 'SKTM', 'required' => true],
+                                            ['name' => 'foto_ijazah', 'label' => 'Ijazah Terakhir', 'required' => false],
+                                            ['name' => 'sktm', 'label' => 'SKTM (Surat Keterangan Tidak Mampu) / DKM', 'required' => true],
                                             ['name' => 'surat_sehat', 'label' => 'Surat Keterangan Sehat', 'required' => true],
-                                            ['name' => 'foto_rumah', 'label' => 'Foto Rumah', 'required' => true],
-                                            ['name' => 'surat_vaksin', 'label' => 'Surat Vaksin', 'required' => false],
+                                            ['name' => 'foto_rumah', 'label' => 'Foto Rumah ( Fotokan seluruh ruangan rumah dalam bentuk grid)', 'required' => true],
                                         ];
                                     @endphp
 
