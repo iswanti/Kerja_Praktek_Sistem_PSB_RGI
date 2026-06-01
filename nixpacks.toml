@@ -11,11 +11,13 @@ nixPkgs = [
   "php82Extensions.curl",
   "php82Extensions.fileinfo",
   "php82Extensions.openssl",
+  "php82Extensions.intl",
+  "php82Extensions.zip",
   "composer"
 ]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = ["composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs"]
 
 [phases.build]
 cmds = [
