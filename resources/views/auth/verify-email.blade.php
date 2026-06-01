@@ -1,31 +1,54 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 text-center">
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <!-- Logo -->
+        <div class="flex justify-center items-center gap-4 mb-4">
+            <img src="/images/logo.jpeg" class="h-10" alt="RGI">
         </div>
-    @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-blue-600">Verifikasi Email</h2>
+        <p class="text-gray-500 text-sm mb-6">
+            Terima kasih telah mendaftar! Silakan verifikasi email Anda dengan mengklik tautan yang telah kami kirimkan.
+            Jika tidak menerima email, kami akan mengirimkan yang baru.
+        </p>
 
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
+        @if (session('status') == 'verification-link-sent')
+            <div class="mb-4 font-medium text-sm text-green-600 bg-green-50 rounded-xl px-4 py-3">
+                Tautan verifikasi baru telah dikirim ke alamat email Anda.
             </div>
-        </form>
+        @endif
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
+        <div class="flex flex-col gap-3 mt-4">
+            <!-- Resend Button -->
+            <form method="POST" action="{{ route('verification.send') }}">
+                @csrf
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">
+                    Kirim Ulang Email Verifikasi
+                </button>
+            </form>
 
-            <button type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                {{ __('Log Out') }}
-            </button>
-        </form>
+            <!-- Logout -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="w-full text-sm text-gray-500 hover:text-blue-600 py-2 transition">
+                    Keluar
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-xs text-gray-400 mt-6">
+            © 2026 Rumah Gemilang Indonesia
+        </p>
     </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+    </script>
 </x-guest-layout>
