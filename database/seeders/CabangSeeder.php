@@ -7,18 +7,22 @@ use App\Models\Cabang;
 
 class CabangSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Cabang::insert([
-        ['nama_cabang' => 'Sawangan, Depok'],
-        ['nama_cabang' => 'Magelang, Jawa Tengah'],
-        ['nama_cabang' => 'Sentra Primer, Jakarta Timur'],
-        ['nama_cabang' => 'Surabaya, Jawa Timur'],
-        ['nama_cabang' => 'Yogyakarta'],
-        ['nama_cabang' => 'Cilacap, Jawa Tengah'],
-    ]);
+        $cabangs = [
+            'Sawangan, Depok',
+            'Magelang, Jawa Tengah',
+            'Sentra Primer, Jakarta Timur',
+            'Surabaya, Jawa Timur',
+            'Yogyakarta',
+            'Cilacap, Jawa Tengah',
+        ];
+
+        foreach ($cabangs as $namaCabang) {
+            Cabang::updateOrCreate(
+                ['nama_cabang' => $namaCabang],
+                ['nama_cabang' => $namaCabang]
+            );
+        }
     }
 }
