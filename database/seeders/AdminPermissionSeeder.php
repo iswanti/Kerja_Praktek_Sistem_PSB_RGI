@@ -69,9 +69,9 @@ class AdminPermissionSeeder extends Seeder
 
                 'admin.pendaftaran.index' => [
                     'read' => true,
-                    'create' => false,
+                    'create' => true,
                     'update' => true,
-                    'delete' => false,
+                    'delete' => true,
                     'download' => true,
                 ],
 
