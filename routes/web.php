@@ -128,7 +128,7 @@ Route::middleware(['auth'])->group(function () {
         // ===== KEWENANGAN =====
         Route::middleware('menu:Kewenangan,read')->group(function () {
             Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-            Route::get('/roles/{id}', [RoleController::class, 'show'])->name('roles.show');
+            // Route::get('/roles/{id}', [RoleController::class, 'show'])->name('roles.show');
         });
 
         Route::middleware('menu:Kewenangan,create')->group(function () {
