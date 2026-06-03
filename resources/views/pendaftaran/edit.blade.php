@@ -570,7 +570,7 @@
                                             ['name' => 'foto_kk', 'label' => 'Kartu Keluarga', 'required' => true],
                                             ['name' => 'foto_ktp', 'label' => 'Kartu Tanda Penduduk (KTP)', 'required' => true],
                                             ['name' => 'foto_ijazah', 'label' => 'Ijazah Terakhir', 'required' => false],
-                                            ['name' => 'sktm', 'label' => 'SKTM (Surat Keterangan Tidak Mampu) / DKM', 'required' => true],
+                                            ['name' => 'sktm', 'label' => 'SKTM (Surat Keterangan Tidak Mampu) / Surat Rekomendasi DKM Masjid/Ponpes', 'required' => true],
                                             ['name' => 'surat_sehat', 'label' => 'Surat Keterangan Sehat', 'required' => true],
                                             ['name' => 'foto_rumah', 'label' => 'Foto Rumah ( Fotokan seluruh ruangan rumah dalam bentuk grid)', 'required' => true],
                                         ];

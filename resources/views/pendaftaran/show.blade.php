@@ -357,7 +357,7 @@
                                     'foto_kk'     => 'Kartu Keluarga',
                                     'foto_ktp'    => 'KTP',
                                     'foto_ijazah' => 'Ijazah Terakhir',
-                                    'sktm'        => 'SKTM (Surat Keterangan Tidak Mampu) / DKM',
+                                    'sktm'        => 'SKTM (Surat Keterangan Tidak Mampu) / Surat Rekomendasi DKM Masjid/Ponpes',
                                     'surat_sehat' => 'Surat Sehat',
                                     'foto_rumah'  => 'Foto Rumah ( Fotokan seluruh ruangan rumah dalam bentuk grid)',
                                 ];
