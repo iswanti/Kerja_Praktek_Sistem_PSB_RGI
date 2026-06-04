@@ -13,6 +13,17 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+                <div class="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+                    <i data-lucide="triangle-alert" class="w-5 h-5 mt-0.5 text-red-500 shrink-0"></i>
+                    <ul class="list-disc list-inside text-sm space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="gelombangCreateForm"
                   action="{{ route('admin.gelombang.store') }}"
                   method="POST"
@@ -118,5 +129,11 @@
 
     <script>
         lucide.createIcons();
+
+        // ✅ Auto hide toast setelah 4 detik
+        setTimeout(() => {
+            document.getElementById('toast-success')?.remove();
+            document.getElementById('toast-error')?.remove();
+        }, 4000);
     </script>
 </x-app-layout>

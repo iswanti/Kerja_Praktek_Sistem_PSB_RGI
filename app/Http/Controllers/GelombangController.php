@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class GelombangController extends Controller
 {
-
     public function index(Request $request)
     {
         $query = Gelombang::query();
@@ -19,9 +18,7 @@ class GelombangController extends Controller
             $query->where('nama_gelombang', 'like', '%' . $request->search . '%');
         }
 
-        $gelombangs = $query
-            ->latest()
-            ->paginate(10);
+        $gelombangs = $query->latest()->paginate(10);
 
         return view('admin.gelombang.index', compact('gelombangs'));
     }
@@ -34,26 +31,62 @@ class GelombangController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_gelombang' => 'required',
-            'tahun_periode' => 'required',
-
-            'pendaftaran_mulai' => 'nullable',
-            'pendaftaran_selesai' => 'nullable',
-
-            'pretest_mulai' => 'nullable',
-            'pretest_selesai' => 'nullable',
-            'durasi_pretest' => 'nullable|integer',
-
-            'wawancara_mulai' => 'nullable',
-            'wawancara_selesai' => 'nullable',
-
-            'pengumuman_mulai' => 'nullable',
+            'nama_gelombang'     => 'required',
+            'tahun_periode'      => 'required',
+            'pendaftaran_mulai'  => 'nullable|date',
+            'pendaftaran_selesai'=> 'nullable|date|after_or_equal:pendaftaran_mulai',
+            'pretest_mulai'      => 'nullable|date',
+            'pretest_selesai'    => 'nullable|date|after_or_equal:pretest_mulai',
+            'durasi_pretest'     => 'nullable|integer',
+            'wawancara_mulai'    => 'nullable|date',
+            'wawancara_selesai'  => 'nullable|date|after_or_equal:wawancara_mulai',
+            'pengumuman_mulai'   => 'nullable|date',
+        ], [
+            'pendaftaran_selesai.after_or_equal' => 'Tanggal selesai pendaftaran tidak boleh sebelum tanggal mulai.',
+            'pretest_selesai.after_or_equal'     => 'Tanggal selesai pretest tidak boleh sebelum tanggal mulai.',
+            'wawancara_selesai.after_or_equal'   => 'Tanggal selesai wawancara tidak boleh sebelum tanggal mulai.',
         ]);
 
-        // Gelombang::create([
-        //     ...$validated,
-        //     'is_active' => $request->has('is_active'),
-        // ]);
+        // Cek overlap gelombang aktif di tahun yang sama
+        if ($request->has('is_active') && $validated['pendaftaran_mulai'] && $validated['pendaftaran_selesai']) {
+            $overlap = Gelombang::where('is_active', true)
+                ->where('tahun_periode', $validated['tahun_periode'])
+                ->where(function ($q) use ($validated) {
+                    $q->whereBetween('pendaftaran_mulai', [
+                            $validated['pendaftaran_mulai'],
+                            $validated['pendaftaran_selesai'],
+                        ])
+                        ->orWhereBetween('pendaftaran_selesai', [
+                            $validated['pendaftaran_mulai'],
+                            $validated['pendaftaran_selesai'],
+                        ])
+                        ->orWhere(function ($q) use ($validated) {
+                            $q->where('pendaftaran_mulai', '<=', $validated['pendaftaran_mulai'])
+                              ->where('pendaftaran_selesai', '>=', $validated['pendaftaran_selesai']);
+                        });
+                })
+                ->exists();
+
+            if ($overlap) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'pendaftaran_mulai' => 'Sudah ada gelombang aktif di rentang tanggal pendaftaran ini pada tahun ' . $validated['tahun_periode'] . '.',
+                    ]);
+            }
+        }
+
+        // Cek maksimal 2 gelombang per tahun
+        $jumlahGelombang = Gelombang::where('tahun_periode', $validated['tahun_periode'])->count();
+
+        if ($jumlahGelombang >= 2) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'tahun_periode' => 'Tahun ' . $validated['tahun_periode'] . ' sudah memiliki 2 gelombang (maksimal).',
+                ]);
+        }
+
         $gelombang = Gelombang::create([
             ...$validated,
             'is_active' => $request->has('is_active'),
@@ -78,21 +111,64 @@ class GelombangController extends Controller
         $gelombang = Gelombang::findOrFail($id);
 
         $validated = $request->validate([
-            'nama_gelombang' => 'required',
-            'tahun_periode' => 'required',
-
-            'pendaftaran_mulai' => 'nullable',
-            'pendaftaran_selesai' => 'nullable',
-
-            'pretest_mulai' => 'nullable',
-            'pretest_selesai' => 'nullable',
-            'durasi_pretest' => 'nullable|integer',
-
-            'wawancara_mulai' => 'nullable',
-            'wawancara_selesai' => 'nullable',
-
-            'pengumuman_mulai' => 'nullable',
+            'nama_gelombang'     => 'required',
+            'tahun_periode'      => 'required',
+            'pendaftaran_mulai'  => 'nullable|date',
+            'pendaftaran_selesai'=> 'nullable|date|after_or_equal:pendaftaran_mulai',
+            'pretest_mulai'      => 'nullable|date',
+            'pretest_selesai'    => 'nullable|date|after_or_equal:pretest_mulai',
+            'durasi_pretest'     => 'nullable|integer',
+            'wawancara_mulai'    => 'nullable|date',
+            'wawancara_selesai'  => 'nullable|date|after_or_equal:wawancara_mulai',
+            'pengumuman_mulai'   => 'nullable|date',
+        ], [
+            'pendaftaran_selesai.after_or_equal' => 'Tanggal selesai pendaftaran tidak boleh sebelum tanggal mulai.',
+            'pretest_selesai.after_or_equal'     => 'Tanggal selesai pretest tidak boleh sebelum tanggal mulai.',
+            'wawancara_selesai.after_or_equal'   => 'Tanggal selesai wawancara tidak boleh sebelum tanggal mulai.',
         ]);
+
+        // Cek overlap gelombang aktif (kecuali diri sendiri)
+        if ($request->has('is_active') && $validated['pendaftaran_mulai'] && $validated['pendaftaran_selesai']) {
+            $overlap = Gelombang::where('is_active', true)
+                ->where('tahun_periode', $validated['tahun_periode'])
+                ->where('id', '!=', $id) // abaikan gelombang ini sendiri
+                ->where(function ($q) use ($validated) {
+                    $q->whereBetween('pendaftaran_mulai', [
+                            $validated['pendaftaran_mulai'],
+                            $validated['pendaftaran_selesai'],
+                        ])
+                        ->orWhereBetween('pendaftaran_selesai', [
+                            $validated['pendaftaran_mulai'],
+                            $validated['pendaftaran_selesai'],
+                        ])
+                        ->orWhere(function ($q) use ($validated) {
+                            $q->where('pendaftaran_mulai', '<=', $validated['pendaftaran_mulai'])
+                              ->where('pendaftaran_selesai', '>=', $validated['pendaftaran_selesai']);
+                        });
+                })
+                ->exists();
+
+            if ($overlap) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'pendaftaran_mulai' => 'Sudah ada gelombang aktif di rentang tanggal pendaftaran ini pada tahun ' . $validated['tahun_periode'] . '.',
+                    ]);
+            }
+        }
+
+        // Cek maksimal 2 gelombang per tahun (kecuali diri sendiri)
+        $jumlahGelombang = Gelombang::where('tahun_periode', $validated['tahun_periode'])
+            ->where('id', '!=', $id)
+            ->count();
+
+        if ($jumlahGelombang >= 2) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'tahun_periode' => 'Tahun ' . $validated['tahun_periode'] . ' sudah memiliki 2 gelombang (maksimal).',
+                ]);
+        }
 
         $oldGelombang = clone $gelombang;
 
@@ -111,7 +187,6 @@ class GelombangController extends Controller
     public function destroy($id)
     {
         $gelombang = Gelombang::findOrFail($id);
-
         $gelombang->delete();
 
         return redirect()
@@ -129,44 +204,54 @@ class GelombangController extends Controller
             && $gelombang->pretest_mulai <= now()
             && $gelombang->pretest_selesai >= now();
 
-        if ($pendaftaranDibuka) {
-            User::whereHas('role', fn ($q) => $q->where('nama', 'Siswa'))
-                ->get()
-                ->each(fn ($user) =>
-                    $user->notify(new StatusPendaftaranNotification(tipe: 'pendaftaran_dibuka'))
-                );
-        }
-
-        if ($pretestDibuka) {
-            Pendaftaran::where('gelombang_id', $gelombang->id)
-                ->where('status', 'seleksi_pretest')
-                ->with('user')
-                ->get()
-                ->each(fn ($pendaftaran) =>
-                    $pendaftaran->user?->notify(new StatusPendaftaranNotification(tipe: 'pretest_dibuka'))
-                );
-        }
-        
         $pendaftaranDitutup = $gelombang->is_active
             && $gelombang->pendaftaran_selesai < now();
 
         $pretestDitutup = $gelombang->is_active
             && $gelombang->pretest_selesai < now();
 
-        if ($pendaftaranDitutup) {
-            User::whereHas('role', fn ($q) => $q->where('nama', 'Siswa'))
+        // Notif pendaftaran dibuka → hanya siswa yang belum pernah diterima
+        if ($pendaftaranDibuka) {
+            User::whereHas('role', fn($q) => $q->where('nama', 'Siswa'))
+                ->whereDoesntHave('pendaftarans', fn($q) =>
+                    $q->whereIn('status', ['diterima'])
+                )
                 ->get()
-                ->each(fn ($user) =>
+                ->each(fn($user) =>
+                    $user->notify(new StatusPendaftaranNotification(tipe: 'pendaftaran_dibuka'))
+                );
+        }
+
+        // Notif pretest dibuka → hanya peserta gelombang ini yang statusnya seleksi_pretest
+        if ($pretestDibuka) {
+            Pendaftaran::where('gelombang_id', $gelombang->id)
+                ->where('status', 'seleksi_pretest')
+                ->with('user')
+                ->get()
+                ->each(fn($pendaftaran) =>
+                    $pendaftaran->user?->notify(new StatusPendaftaranNotification(tipe: 'pretest_dibuka'))
+                );
+        }
+
+        // Notif pendaftaran ditutup
+        if ($pendaftaranDitutup) {
+            User::whereHas('role', fn($q) => $q->where('nama', 'Siswa'))
+                ->whereDoesntHave('pendaftarans', fn($q) =>
+                    $q->whereIn('status', ['diterima'])
+                )
+                ->get()
+                ->each(fn($user) =>
                     $user->notify(new StatusPendaftaranNotification(tipe: 'pendaftaran_ditutup'))
                 );
         }
 
+        // Notif pretest ditutup
         if ($pretestDitutup) {
             Pendaftaran::where('gelombang_id', $gelombang->id)
                 ->where('status', 'seleksi_pretest')
                 ->with('user')
                 ->get()
-                ->each(fn ($pendaftaran) =>
+                ->each(fn($pendaftaran) =>
                     $pendaftaran->user?->notify(new StatusPendaftaranNotification(tipe: 'pretest_ditutup'))
                 );
         }

@@ -4,7 +4,6 @@
     </x-slot>
 
     <div class="max-w-6xl mx-auto space-y-6">
-
         {{-- Card Hasil --}}
         @if(isset($pendaftaran) && $pengumumanAktif)
                 {{-- Informasi Ringkas --}}

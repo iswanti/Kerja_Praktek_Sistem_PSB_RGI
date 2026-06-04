@@ -1,6 +1,21 @@
 <x-app-layout>
     <div class="w-full mx-auto py-5">
         <div class="bg-white p-8 rounded-lg shadow">
+            @if (session('success'))
+                <div id="toast-success"
+                     class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-5 py-4 rounded-xl mb-6">
+                    <i data-lucide="circle-check-big" class="w-5 h-5 text-green-500"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div id="toast-error"
+                     class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+                    <i data-lucide="circle-x" class="w-5 h-5 text-red-500"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
 
             <div class="flex justify-between items-start mb-8">
                 <div class="flex items-center gap-5">
@@ -154,5 +169,11 @@
 
     <script>
         lucide.createIcons();
+
+        // ✅ Auto hide toast setelah 4 detik
+        setTimeout(() => {
+            document.getElementById('toast-success')?.remove();
+            document.getElementById('toast-error')?.remove();
+        }, 4000);
     </script>
 </x-app-layout>

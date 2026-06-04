@@ -31,7 +31,7 @@
                             </a>
                         @endif
 
-                        <a href="#"
+                        <a href="{{ route('admin.pendaftaran.download') }}"
                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
                             <i data-lucide="download" class="w-5 h-5"></i> Download
                         </a>
@@ -128,11 +128,6 @@
                             Menunggu Verifikasi
                         </option>
 
-                        <option value="terverifikasi"
-                            {{ request('status') == 'terverifikasi' ? 'selected' : '' }}>
-                            Terverifikasi
-                        </option>
-
                         <option value="seleksi_pretest"
                             {{ request('status') == 'seleksi_pretest' ? 'selected' : '' }}>
                             Seleksi Pretest
@@ -146,6 +141,16 @@
                         <option value="verifikasi_kelulusan_siswa"
                             {{ request('status') == 'verifikasi_kelulusan_siswa' ? 'selected' : '' }}>
                             Verifikasi Kelulusan
+                        </option>
+
+                        <option value="verifikasi_kelulusan_siswa"
+                            {{ request('status') == 'diterima' ? 'selected' : '' }}>
+                            Diterima
+                        </option>
+
+                        <option value="verifikasi_kelulusan_siswa"
+                            {{ request('status') == 'cadangan' ? 'selected' : '' }}>
+                            Cadangan
                         </option>
 
                         <option value="ditolak"
@@ -205,6 +210,10 @@
                                     Tanggal Buat
                                 </th>
 
+                                <th class="px-6 py-4 text-left font-semibold">
+                                    Gelombang
+                                </th>
+
                                 <th class="px-6 py-4 text-center font-semibold">
                                     Action
                                 </th>
@@ -247,10 +256,6 @@
                                                     'text' => 'Menunggu Verifikasi',
                                                     'class' => 'bg-yellow-100 text-yellow-700',
                                                 ],
-                                                'terverifikasi' => [
-                                                    'text' => 'Terverifikasi',
-                                                    'class' => 'bg-green-100 text-green-700',
-                                                ],
                                                 'seleksi_pretest' => [
                                                     'text' => 'Seleksi Pretest',
                                                     'class' => 'bg-blue-100 text-blue-700',
@@ -263,6 +268,15 @@
                                                     'text' => 'Verifikasi Kelulusan',
                                                     'class' => 'bg-teal-100 text-teal-700',
                                                 ],
+                                                'diterima' => [
+                                                    'text' => 'Diterima',
+                                                    'class' => 'bg-green-100 text-green-700',
+                                                ],
+                                                'cadangan' => [
+                                                    'text' => 'Cadangan',
+                                                    'class' => 'bg-yellow-100 text-yellow-700',
+                                                ],
+
                                                 'ditolak' => [
                                                     'text' => 'Ditolak',
                                                     'class' => 'bg-red-100 text-red-700',
@@ -282,6 +296,10 @@
 
                                     <td class="px-6 py-5">
                                         {{ $item->created_at->format('d/m/Y') }}
+                                    </td>
+
+                                    <td class="px-6 py-5">
+                                        {{ substr($item->gelombang->nama_gelombang, -1) }}
                                     </td>
 
                                     <td class="px-6 py-5">

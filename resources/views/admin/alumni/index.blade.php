@@ -54,10 +54,17 @@
                            placeholder="Angkatan, contoh: 2024"
                            class="rounded-xl border-gray-200 text-sm px-4 py-2.5">
 
-                    <button type="submit"
-                            class="rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2.5">
-                        Filter
-                    </button>
+                    <div class="flex gap-2">
+                        <button type="submit"
+                                class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5">
+                            Filter
+                        </button>
+                        <a href="{{ route('admin.alumni.index') }}"
+                            class="px-4 rounded-2xl border border-gray-200 flex items-center justify-center hover:bg-gray-50">
+                                Reset
+                            </a>
+                        </div>
+
                 </form>
             </div>
 
@@ -97,7 +104,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex justify-center gap-2">
                                         <a href="{{ route('admin.alumni.edit', $item->id) }}"
-                                           class="px-4 py-2 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 text-xs font-semibold">
+                                           class="text-blue-600 hover:bg-blue-50 transition">
                                             <i data-lucide="pencil" class="w-5 h-5"></i>
                                         </a>
 

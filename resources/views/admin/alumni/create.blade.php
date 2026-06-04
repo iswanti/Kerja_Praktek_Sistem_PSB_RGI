@@ -50,7 +50,7 @@
                 <button onclick="switchTab('import')" id="btn-import"
                     class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-gray-100 text-gray-600 hover:bg-gray-200">
                     <i data-lucide="upload" class="w-4 h-4"></i>
-                    <span>Upload CSV</span>
+                    <span>Upload Dokumen</span>
                 </button>
             </div>
 
@@ -131,7 +131,7 @@
 
                     {{-- Info Format --}}
                     <div class="mb-4 p-4 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-700">
-                        <p class="font-semibold mb-2">Format CSV yang diperlukan:</p>
+                        <p class="font-semibold mb-2">Format dokumen yang diperlukan:</p>
                         <code class="block bg-white rounded-lg px-3 py-2 text-xs text-gray-700 border border-blue-100 leading-6">
                             nama,jurusan,angkatan<br>
                             Budi Santoso,Teknik Informatika,2022<br>
@@ -146,7 +146,7 @@
                     <a href="{{ route('admin.alumni.template') }}"
                        class="inline-flex items-center gap-2 border border-green-500 text-green-600 hover:bg-green-50 px-4 py-2.5 rounded-xl text-sm font-semibold transition mb-4">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        Download Template CSV
+                        Download Template
                     </a>
 
                     <form action="{{ route('admin.alumni.import') }}" method="POST" enctype="multipart/form-data">
@@ -154,21 +154,21 @@
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Upload File CSV <span class="text-red-500">*</span>
+                                Upload File <span class="text-red-500">*</span>
                             </label>
 
-                            <label for="csv-file"
+                            <label for="import-file"
                                    class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
                                 <i data-lucide="file-up" class="w-8 h-8 text-gray-400 mb-2"></i>
                                 <span class="text-sm text-gray-500">Klik untuk pilih file atau drag & drop</span>
                                 <span id="file-name" class="text-xs text-blue-600 mt-1 font-semibold"></span>
-                                <span class="text-xs text-gray-400 mt-1">Format: .csv — Maks. 2MB</span>
+                                <span class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv — Maks. 2MB</span>
                             </label>
 
                             <input type="file"
-                                   id="csv-file"
+                                   id="import-file"
                                    name="file"
-                                   accept=".csv"
+                                   accept=".xlsx,.xls,.csv"
                                    class="hidden"
                                    onchange="document.getElementById('file-name').textContent = this.files[0]?.name ?? ''">
 

@@ -15,10 +15,33 @@
 
             {{-- Form --}}
             <form action="{{ route('admin.users.store') }}" method="POST"
-                  x-data="{
-                      roleName: '{{ old('role_id') ? optional($roles->firstWhere('id', old('role_id')))->nama : '' }}',
-                      unsurWawancara: '{{ old('unsur_wawancara') }}'
-                  }">
+                x-data="{
+                    roleName: '{{ old('role_id') ? optional($roles->firstWhere('id', old('role_id')))->nama : '' }}',
+                    unsurWawancara: '{{ old('unsur_wawancara') }}',
+                    cabangId: '{{ old('cabang_id') }}',
+                    jurusans: [],
+                    loadingJurusan: false,
+
+                    async fetchJurusan() {
+                        if (!this.cabangId) {
+                            this.jurusans = [];
+                            return;
+                        }
+                        this.loadingJurusan = true;
+                        try {
+                            const res = await fetch(`/admin/jurusans-by-cabang/${this.cabangId}`);
+                            this.jurusans = await res.json();
+                        } catch (e) {
+                            this.jurusans = [];
+                        } finally {
+                            this.loadingJurusan = false;
+                        }
+                    },
+
+                    init() {
+                        if (this.cabangId) this.fetchJurusan();
+                    }
+                }">
                 @csrf
 
                 <div class="grid grid-cols-2 gap-x-8 gap-y-5 mt-12">
@@ -49,6 +72,26 @@
                         <input type="text" name="phone" value="{{ old('phone') }}" maxlength="14"
                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:ring-blue-200 focus:border-blue-500">
                         @error('phone')
+                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Cabang --}}
+                    <div>
+                        <label class="block text-sm mb-2">Cabang</label>
+                        <select name="cabang_id"
+                                x-model="cabangId"
+                                x-on:change="fetchJurusan()"
+                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:ring-blue-200 focus:border-blue-500">
+                            <option value="">Pilih Cabang</option>
+                            @foreach ($cabangs as $cabang)
+                                <option value="{{ $cabang->id }}"
+                                        {{ old('cabang_id') == $cabang->id ? 'selected' : '' }}>
+                                    {{ $cabang->nama_cabang }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('cabang_id')
                             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -98,34 +141,30 @@
                     <div x-show="roleName === 'Tim Wawancara' && unsurWawancara === 'instruktur'" x-transition x-cloak>
                         <label class="block text-sm mb-2">Jurusan Instruktur</label>
                         <select name="jurusan_id"
-                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:ring-blue-200 focus:border-blue-500">
-                            <option value="">Pilih Jurusan</option>
-                            @foreach ($jurusans as $jurusan)
-                                <option value="{{ $jurusan->id }}"
-                                        {{ old('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
-                                    {{ $jurusan->nama_jurusan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('jurusan_id')
-                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                                :disabled="loadingJurusan"
+                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:ring-blue-200 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400">
 
-                    {{-- Cabang --}}
-                    <div>
-                        <label class="block text-sm mb-2">Cabang</label>
-                        <select name="cabang_id"
-                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:ring-blue-200 focus:border-blue-500">
-                            <option value="">Pilih Cabang</option>
-                            @foreach ($cabangs as $cabang)
-                                <option value="{{ $cabang->id }}"
-                                        {{ old('cabang_id') == $cabang->id ? 'selected' : '' }}>
-                                    {{ $cabang->nama_cabang }}
+                            <option value="" x-text="loadingJurusan 
+                                ? 'Memuat...' 
+                                : (!cabangId 
+                                    ? 'Pilih cabang dulu' 
+                                    : (jurusans.length === 0 ? 'Tidak ada jurusan' : 'Pilih Jurusan'))">
+                            </option>
+
+                            <template x-for="jurusan in jurusans" :key="jurusan.id">
+                                <option :value="jurusan.id"
+                                        :selected="String(jurusan.id) === '{{ old('jurusan_id') }}'"
+                                        x-text="jurusan.nama_jurusan">
                                 </option>
-                            @endforeach
+                            </template>
+
                         </select>
-                        @error('cabang_id')
+
+                        <p x-show="!cabangId" class="text-sm text-amber-500 mt-1">
+                            Pilih cabang terlebih dahulu untuk melihat jurusan.
+                        </p>
+
+                        @error('jurusan_id')
                             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>

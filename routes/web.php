@@ -15,6 +15,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WawancaraController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PendaftaranExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -90,6 +92,11 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::middleware('menu:Pendaftaran,read')->group(function () {
+
+            Route::get('/pendaftaran/download', function() {
+                return Excel::download(new \App\Exports\PendaftaranExport, 'pendaftaran.xlsx');
+            })->name('pendaftaran.download');
+                    
             Route::get('/pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
             Route::get('/pendaftaran/{id}', [PendaftaranController::class, 'show'])->name('pendaftaran.show');
         });
@@ -266,3 +273,9 @@ Route::get('/provinsi', [WilayahController::class, 'provinsi']);
 Route::get('/kabupaten/{id}', [WilayahController::class, 'kabupaten']);
 Route::get('/kecamatan/{id}', [WilayahController::class, 'kecamatan']);
 Route::get('/kelurahan/{id}', [WilayahController::class, 'kelurahan']);
+Route::get('/admin/jurusans-by-cabang/{cabangId}', function ($cabangId) {
+    return \App\Models\Jurusan::where('cabang_id', $cabangId)
+        ->where('is_active', true)
+        ->orderBy('nama_jurusan')
+        ->get(['id', 'nama_jurusan']);
+})->middleware(['auth']);

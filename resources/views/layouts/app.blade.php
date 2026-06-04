@@ -263,6 +263,29 @@
                 document.getElementById(formId).submit();
             }
         });
+
+        function konfirmasiSubmit() {
+            Swal.fire({
+                title: 'Konfirmasi Simpan',
+                text: 'Apakah Anda yakin ingin menyimpan pendaftaran ini? Data yang sudah disimpan tidak dapat diubah kembali.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#312e81',
+                cancelButtonColor: '#ef4444',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl',
+                    confirmButton: 'px-8 py-3 rounded-xl font-semibold',
+                    cancelButton: 'px-8 py-3 rounded-xl font-semibold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formPendaftaran').submit();
+                }
+            });
+        }
     }
 
 

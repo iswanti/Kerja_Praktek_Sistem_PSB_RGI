@@ -134,12 +134,16 @@ class PendaftaranController extends Controller
             return view('pendaftaran.tutup');
         }
 
-        $sudahDaftar = Pendaftaran::where('user_id', auth()->id())
-        ->latest()
-        ->first();
+        $isAdmin = in_array(auth()->user()->role?->nama, ['Admin', 'Superadmin']);
 
-        if ($sudahDaftar) {
-            return view('pendaftaran.sudah-daftar', compact('sudahDaftar'));
+        // Hanya siswa biasa yang dicek sudah daftar atau belum
+        if (!$isAdmin) {
+            $sudahDaftar = Pendaftaran::where('user_id', auth()->id())
+                ->latest()->first();
+
+            if ($sudahDaftar) {
+                return view('pendaftaran.sudah-daftar', compact('sudahDaftar'));
+            }
         }
         
         $cabangs = Cabang::with(['jurusans' => function ($q) {
@@ -153,12 +157,11 @@ class PendaftaranController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->role?->nama !== 'Admin') {
+        $isAdmin = in_array(auth()->user()->role?->nama, ['Admin', 'Superadmin']);
+        if (!$isAdmin) {
             $cekPendaftaran = Pendaftaran::where('user_id', auth()->id())->first();
-
             if ($cekPendaftaran) {
-                return redirect()
-                    ->route('dashboard')
+                return redirect()->route('dashboard')
                     ->with('warning', 'Pendaftaran Anda sudah pernah dilakukan dan saat ini sedang berada pada tahap ' .
                         ucwords(str_replace('_', ' ', $cekPendaftaran->status)) . '.'
                     );
@@ -168,7 +171,7 @@ class PendaftaranController extends Controller
         $validated = $request->validate([
             'cabang_id' => 'required|exists:cabangs,id',
             'jurusan_id' => 'required|exists:jurusans,id',
-            'nik' => 'required|numeric|digits:16',
+            'nik' => 'required|numeric|digits:16|unique:pendaftarans,nik',
             'nkk' => 'required|numeric|digits:16',
             'nama' => 'required|string|max:255',
             'tempat_lahir' => 'required|string|max:100',
@@ -367,7 +370,7 @@ class PendaftaranController extends Controller
             new StatusPendaftaranNotification($pendaftaran)
         );
 
-        if (auth()->user()->role?->nama === 'Admin') {
+        if ($isAdmin) {
             return redirect()
                 ->route('admin.pendaftaran.index')
                 ->with('success', 'Pendaftaran berhasil!')
@@ -553,12 +556,6 @@ class PendaftaranController extends Controller
             ->with('success', 'Data berhasil dihapus');
     }
 
-    // public function show($id)
-    // {
-    //     $pendaftaran = Pendaftaran::with(['cabang', 'jurusan'])->findOrFail($id);
-
-    //     return view('pendaftaran.show', compact('pendaftaran'));
-    // }
     public function show($id)
     {
         $pendaftaran = Pendaftaran::with(['cabang', 'jurusan', 'wawancara', 'gelombang'])

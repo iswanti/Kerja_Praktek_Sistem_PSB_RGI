@@ -32,7 +32,7 @@
                             {{ $status['text'] }}
                         </span>
 
-                        <a href="{{ Auth::user()->role === 'admin' ? route('admin.pendaftaran.index') : route('dashboard') }}"
+                        <a href="{{ in_array(Auth::user()->role?->nama, ['Admin', 'Superadmin']) ? route('admin.pendaftaran.index') : route('dashboard') }}"
                             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold transition">
                             <i data-lucide="arrow-left" class="w-4 h-4"></i>
                             Kembali

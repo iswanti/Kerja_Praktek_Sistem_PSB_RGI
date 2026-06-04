@@ -134,7 +134,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Anak Ke <span class="text-red-500">*</span></label>
-                                    <input type="number" name="anak_ke" placeholder="Contoh: 1, 2, 3..." class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('anak_ke', $pendaftaran->anak_ke) }}">
+                                    <input type="number" name="anak_ke"  placeholder="Contoh: 1, 2, 3..." class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('anak_ke', $pendaftaran->anak_ke) }}">
                                 </div>
                             </div>
 
@@ -222,7 +222,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Handphone / WhatsApp <span class="text-red-500">*</span></label>
-                                    <input type="number" name="no_hp" maxlength="13" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('no_hp', $pendaftaran->no_hp) }}">
+                                    <input type="text" name="no_hp" maxlength="13" inputmode="numeric" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('no_hp', $pendaftaran->no_hp) }}">
                                 </div>
 
                                 @php

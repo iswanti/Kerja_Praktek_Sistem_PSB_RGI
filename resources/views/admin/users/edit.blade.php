@@ -20,6 +20,7 @@
                       cabangId: '{{ old('cabang_id', $user->cabang_id) }}',
                       roleName: '{{ old('role_id') ? optional($roles->firstWhere('id', old('role_id')))->nama : optional($user->role)->nama }}',
                       unsurWawancara: '{{ old('unsur_wawancara', $user->unsur_wawancara) }}',
+                      selectedJurusanId: '{{ old('jurusan_id', $user->jurusan_id) }}',
                       jurusans: [],
                       loadingJurusan: false,
 
@@ -149,9 +150,11 @@
                             <option value="" x-text="loadingJurusan ? 'Memuat...' : (jurusans.length === 0 && cabangId ? 'Tidak ada jurusan' : 'Pilih Jurusan')"></option>
 
                             <template x-for="jurusan in jurusans" :key="jurusan.id">
-                                <option :value="jurusan.id"
-                                        :selected="jurusan.id == '{{ old('jurusan_id', $user->jurusan_id) }}'"
-                                        x-text="jurusan.nama_jurusan">
+                                <option 
+                                    :value="jurusan.id"
+                                    {{-- ✅ Bandingkan dengan selectedJurusanId --}}
+                                    :selected="String(jurusan.id) === String(selectedJurusanId)"
+                                    x-text="jurusan.nama_jurusan">
                                 </option>
                             </template>
 
