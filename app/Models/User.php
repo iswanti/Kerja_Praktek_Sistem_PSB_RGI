@@ -3,6 +3,7 @@
 namespace App\Models;
 use App\Models\Cabang;
 use App\Models\Role;
+use App\Models\Pendaftaran;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
@@ -114,10 +115,13 @@ class User extends Authenticatable
     public function canDeleteMenu($menuName)
     {
         return $this->hasMenuPermission($menuName, 'delete');
-    }
-   
+    } 
     public function canDownloadMenu($menuName)
     {
         return $this->hasMenuPermission($menuName, 'download');
+    }
+    public function pendaftarans()
+    {
+        return $this->hasMany(Pendaftaran::class);
     }
 }

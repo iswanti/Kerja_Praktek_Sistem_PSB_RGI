@@ -12,6 +12,12 @@ class WawancaraController extends Controller
     public function index(Request $request)
     {
 
+        $user = auth()->user();
+        $roleId = $user->role_id;
+        $cabangId = $user->cabang_id;
+        $unsurRole = $user->unsur_wawancara;
+        $jurusanId = $user->jurusan_id;
+
         $query = Pendaftaran::with(['cabang', 'jurusan', 'wawancara'])
             ->whereIn('status', [
                 'wawancara',
@@ -24,6 +30,10 @@ class WawancaraController extends Controller
                 $q->where('nama', 'ILIKE', "%{$search}%")
                 ->orWhere('kode_pendaftaran', 'ILIKE', "%{$search}%");
             });
+        }
+
+        if ($roleId != 1 && $cabangId) {
+            $query->where('cabang_id', $cabangId);
         }
 
         if ($request->filled('status_penilaian')) {

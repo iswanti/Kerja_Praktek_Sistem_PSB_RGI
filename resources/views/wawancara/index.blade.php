@@ -351,9 +351,9 @@
 
             {{-- Pagination --}}
             @if(method_exists($pendaftarans, 'links'))
-                <div class="px-5 py-4 border-t border-gray-100">
-                    {{ $pendaftarans->links() }}
-                </div>
+                <div class="flex justify-end px-6 py-4 text-gray-500 ">
+                {{ $pendaftarans->links() }}
+            </div>
             @endif
         </div>
 

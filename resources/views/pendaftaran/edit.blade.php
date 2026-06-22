@@ -10,9 +10,77 @@
 
             <div class="p-8">
                 {{-- <form action="{{ route('pendaftaran.store') }}" method="POST" enctype="multipart/form-data"> --}}
-                <form action="{{ route('admin.pendaftaran.update', $pendaftaran->id) }}" method="POST" enctype="multipart/form-data">
+                <form id="formPendaftaran" x-data="stepForm()" action="{{ route('admin.pendaftaran.update', $pendaftaran->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm">
+
+                        <div class="flex items-center justify-between relative">
+
+                            <!-- line connector -->
+                            <div class="absolute top-5 left-0 right-0 h-[2px] bg-gray-200"></div>
+
+                            <!-- STEP 1 -->
+                            <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                                @click="setStep(1)">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                                    :class="step >= 1 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-300'">
+                                    1
+                                </div>
+                                <p class="text-xs mt-2" :class="step === 1 ? 'text-blue-600 font-semibold' : 'text-gray-400'">
+                                    Kampus dan Jurusan
+                                </p>
+                            </div>
+
+                            <!-- STEP 2 -->
+                            <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                                @click="setStep(2)">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                                    :class="step >= 2 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-300'">
+                                    2
+                                </div>
+                                <p class="text-xs mt-2" :class="step === 2 ? 'text-blue-600 font-semibold' : 'text-gray-400'">
+                                    Data Diri dan Media Sosial
+                                </p>
+                            </div>
+
+                            <!-- STEP 3 -->
+                            <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                                @click="setStep(3)">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                                    :class="step >= 3 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-300'">
+                                    3
+                                </div>
+                                <p class="text-xs mt-2" :class="step === 3 ? 'text-blue-600 font-semibold' : 'text-gray-400'">
+                                    Data Orang Tua/Wali
+                                </p>
+                            </div>
+
+                            <!-- STEP 4 -->
+                            <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                                @click="setStep(4)">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                                    :class="step >= 4 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-300'">
+                                    4
+                                </div>
+                                <p class="text-xs mt-2" :class="step === 4 ? 'text-blue-600 font-semibold' : 'text-gray-400'">
+                                    Lain - lain
+                                </p>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                                @click="setStep(5)">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                                    :class="step >= 5 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-300'">
+                                    5
+                                </div>
+                                <p class="text-xs mt-2" :class="step === 5 ? 'text-blue-600 font-semibold' : 'text-gray-400'">
+                                    Dokumen Pendukung
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
                     @if ($errors->any())
                         <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex gap-3">
@@ -41,47 +109,54 @@
                     @endif
 
                     <div class="space-y-10">
-
                         <!-- Section: Kampus dan Jurusan -->
-                        <div>
-                            <div class="flex items-center gap-3 mb-1">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h2 class="text-lg font-semibold text-gray-800">Pilih Kampus dan Jurusan</h2>
-                                    <p class="text-sm text-gray-500">Pilih lokasi kampus tujuan dan program keahlian yang diminati.</p>
-                                </div>
-                            </div>
-
-                            <div x-data="kampusJurusan()" x-init='initData(@json($cabangs),@js(old("cabang_id", $pendaftaran->cabang_id)),@js(old("jurusan_id", $pendaftaran->jurusan_id)) )' class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Kampus <span class="text-red-500">*</span></label>
-                                    <select x-model="kampus" @change="updateJurusan()" name="cabang_id" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5">
-                                        <option value="">Pilih Kampus</option>
-                                        <template x-for="c in cabangs" :key="c.id">
-                                            <option :value="c.id" :selected="c.id == '{{ old('cabang_id', $pendaftaran->cabang_id) }}'"  x-text="c.nama_cabang"></option>
-                                        </template>
-                                    </select>
+                        <div x-show="step === 1" x-transition>
+                            <div class = "mt-3">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-lg font-semibold text-gray-800">Pilih Kampus dan Jurusan</h2>
+                                        <p class="text-sm text-gray-500">Pilih lokasi kampus tujuan dan program keahlian yang diminati.</p>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Jurusan <span class="text-red-500">*</span></label>
-                                    <select name="jurusan_id" x-model="jurusan" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5 disabled:bg-gray-50 disabled:text-gray-400" :disabled="!kampus">
-                                        <option value="">Pilih Jurusan</option>
-                                        <template x-for="j in jurusanList" :key="j.id">
-                                            <option :value="j.id" :selected="j.id == '{{ old('jurusan_id', $pendaftaran->jurusan_id) }}'" x-text="j.nama_jurusan"></option>
-                                        </template>
-                                    </select>
-                                </div>
+                                <div x-data="kampusJurusan()" x-init='initData(@json($cabangs),@js(old("cabang_id", $pendaftaran->cabang_id)),@js(old("jurusan_id", $pendaftaran->jurusan_id)) )' class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Kampus <span class="text-red-500">*</span></label>
+                                        <select x-model="kampus" @change="updateJurusan()" name="cabang_id" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5">
+                                            <option value="">Pilih Kampus</option>
+                                            <template x-for="c in cabangs" :key="c.id">
+                                                <option :value="c.id" :selected="c.id == '{{ old('cabang_id', $pendaftaran->cabang_id) }}'"  x-text="c.nama_cabang"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Jurusan <span class="text-red-500">*</span></label>
+                                        <select name="jurusan_id" x-model="jurusan" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm py-2.5 disabled:bg-gray-50 disabled:text-gray-400" :disabled="!kampus">
+                                            <option value="">Pilih Jurusan</option>
+                                            <template x-for="j in jurusanList" :key="j.id">
+                                                <option :value="j.id" :selected="j.id == '{{ old('jurusan_id', $pendaftaran->jurusan_id) }}'" x-text="j.nama_jurusan"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </div>   
                             </div>
-                            
+                            <div class="mt-6 flex justify-end">
+                                <button type="button"
+                                    @click="next()"
+                                    class="px-6 py-2 bg-blue-600 text-white rounded-xl">
+                                    Lanjut
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Section: Informasi Data Diri -->
-                        <div class="border-t border-gray-100 pt-8">
+                        <div x-show="step === 2" x-transition>
                             <div class="flex items-center gap-3 mb-1">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +247,7 @@
                                         <select x-model="kecamatan" @change="pilihKecamatan()" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400" :disabled="!kabupaten">
                                             <option value="">Pilih Kecamatan</option>
                                             <template x-for="kec in kecamatans" :key="kec.code">
-                                                 <option :value="String(kec.code).trim()" x-text="kec.name"></option>
+                                                <option :value="String(kec.code).trim()" x-text="kec.name"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -260,35 +335,48 @@
                                     <input type="text" name="penyakit" placeholder="Jika ada, sebutkan penyakitnya" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('penyakit', $pendaftaran->penyakit) }}">
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Section: Media Sosial -->
-                        <div class="border-t border-gray-100 pt-8">
-                            <div class="flex items-center gap-3 mb-1">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-                                    </svg>
+                            <!-- Section: Media Sosial -->
+                            <div class="border-t border-gray-100 pt-8">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-lg font-semibold text-gray-800">Akun Media Sosial</h2>
+                                        <p class="text-sm text-gray-500">ID Sosial media, contoh: www.facebook.com/rumahgemilang, @rumahgemilang</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 class="text-lg font-semibold text-gray-800">Akun Media Sosial</h2>
-                                    <p class="text-sm text-gray-500">ID Sosial media, contoh: www.facebook.com/rumahgemilang, @rumahgemilang</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Facebook</label>
+                                        <input type="text" name="facebook" placeholder="URL atau nama akun Facebook" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('facebook', $pendaftaran->facebook) }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Instagram</label>
+                                        <input type="text" name="instagram" placeholder="@username Instagram" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('instagram', $pendaftaran->instagram) }}">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Facebook</label>
-                                    <input type="text" name="facebook" placeholder="URL atau nama akun Facebook" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('facebook', $pendaftaran->facebook) }}">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Instagram</label>
-                                    <input type="text" name="instagram" placeholder="@username Instagram" class="mt-0 w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" value="{{ old('instagram', $pendaftaran->instagram) }}">
-                                </div>
+                            <div class="mt-6 flex justify-between">
+                                <button type="button"
+                                    @click="back()"
+                                    class="px-6 py-2 bg-gray-200 rounded-xl">
+                                    Kembali
+                                </button>
+
+                                <button type="button"
+                                    @click="next()"
+                                    class="px-6 py-2 bg-blue-600 text-white rounded-xl">
+                                    Lanjut
+                                </button>
                             </div>
                         </div>
 
                         <!-- Section: Data Orang Tua/Wali -->
-                        <div class="border-t border-gray-100 pt-8">
+                        <div x-show="step === 3" x-transition>
                             <div class="flex items-center gap-3 mb-1">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -457,10 +545,19 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="mt-6 flex justify-between">
+                                <button type="button" @click="back()" class="px-6 py-2 bg-gray-200 rounded-xl">
+                                    Kembali
+                                </button>
+
+                                <button type="button" @click="next()" class="px-6 py-2 bg-blue-600 text-white rounded-xl">
+                                    Lanjut
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Section: Lain-lain -->
-                        <div class="border-t border-gray-100 pt-8">
+                        <div x-show="step === 4" x-transition>
                             <div class="flex items-center gap-3 mb-1">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -545,10 +642,23 @@
                                     <input type="text" name="rekomendasi" placeholder="Yang merekomendasikan Anda mendaftar ke Rumah Gemilang Indonesia?" class="w-full border-gray-300 rounded-xl shadow-sm text-sm py-2.5 focus:ring-2 focus:ring-blue-300 focus:border-blue-500" {{ old('rekomendasi',$pendaftaran->rekomendasi) }}>
                                 </div>
                             </div>
+                            <div class="mt-6 flex justify-between">
+                                <button type="button"
+                                    @click="back()"
+                                    class="px-6 py-2 bg-gray-200 rounded-xl">
+                                    Kembali
+                                </button>
+
+                                <button type="button"
+                                    @click="next()"
+                                    class="px-6 py-2 bg-blue-600 text-white rounded-xl">
+                                    Lanjut
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Section: Upload Dokumen -->
-                        <div class="border-t border-gray-100 pt-8">
+                        <div x-show="step === 5" x-transition>
                             <div class="flex items-center gap-3 mb-1">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -653,14 +763,17 @@
                                     </div>
                                 </template>
                             </div>
-                        </div>
-
-                        <!-- Submit -->
-                        <div class="border-t border-gray-100 pt-6 flex items-center justify-between">
-                            <p class="text-sm text-gray-400">Pastikan semua data sudah benar sebelum mengirim</p>
-                            <button type="submit" class="px-10 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-                                Simpan Perubahan
-                            </button>
+                    
+                            <div class="border-t border-gray-100 pt-6 flex items-center justify-between">
+                                <p class="text-sm text-gray-400">Pastikan semua data sudah benar sebelum mengirim</p>
+                                <div class="mt-6 flex justify-between">
+                                    <button type="button" @click="back()" class="px-6 py-2 bg-gray-200 rounded-xl">
+                                        Kembali
+                                    </button>
+                                    <button type="submit" class="px-10 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                                        Simpan Perubahan
+                                    </button>   
+                            </div>
                         </div>
 
                     </div>
@@ -668,4 +781,98 @@
             </div>
         </div>
     </div>
+    <script>
+        function stepForm() {
+            return {
+                step: 1,
+
+                setStep(i) {
+                    if (i < this.step) this.step = i; // boleh kembali
+                },
+
+                next() {
+                    if (this.validateStep()) {
+                        this.step++;
+                    }
+                },
+
+                back() {
+                    this.step--;
+                },
+
+                validateStep() {
+                    const form = document.getElementById('formPendaftaran');
+
+                    const stepFields = {
+                        1: ['cabang_id', 'jurusan_id'],
+                        2: [
+                            'nik', 'nkk', 'nama', 'tempat_lahir', 'tgl_lahir', 'umur',
+                            'jenis_kelamin', 'anak_ke', 'alamat',
+                            'provinsi_nama', 'kabupaten_nama', 'kecamatan_nama', 'kelurahan_nama',
+                            'pendidikan', 'sekolah', 'cita_cita', 'no_hp',
+                            'facebook', 'instagram'
+                        ],
+                        3: [
+                            'nama_wali', 'pendidikan_wali', 'pekerjaan_wali', 'nohp_wali',
+                            'nama_ibu', 'pendidikan_ibu', 'pekerjaan_ibu', 'nohp_ibu',
+                            'alamat_orangtua', 'jml_keluarga', 'pendapatan_keluarga', 'status_rumah'
+                        ],
+                        4: ['motivasi', 'alasan'],
+                    };
+
+                    const fields = stepFields[this.step];
+                    if (!fields) return true;
+
+                    let valid = true;
+                    let firstInvalid = null;
+
+                    fields.forEach(name => {
+                        const els = form.querySelectorAll(`[name="${name}"]`);
+                        let filled = false;
+
+                        if (els.length === 0) return;
+
+                        const type = els[0].type;
+
+                        if (type === 'radio' || type === 'checkbox') {
+                            filled = [...els].some(el => el.checked);
+                        } else {
+                            filled = els[0].value.trim() !== '';
+                        }
+
+                        if (!filled) {
+                            els.forEach(el => el.classList.add('border-red-500'));
+                            if (!firstInvalid) firstInvalid = els[0];
+                            valid = false;
+                        } else {
+                            els.forEach(el => el.classList.remove('border-red-500'));
+                        }
+                    });
+
+                    if (!valid) {
+                        firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Form Belum Lengkap',
+                            text: 'Harap isi semua field yang wajib diisi sebelum melanjutkan.',
+                            confirmButtonColor: '#2563eb',
+                            customClass: { popup: 'rounded-2xl' }
+                        });
+                    }
+
+                    return valid;
+                }
+            }
+        }
+    </script>
+    <script>
+        // Hapus border merah saat user mulai mengisi field
+        document.getElementById('formPendaftaran').addEventListener('input', function(e) {
+            e.target.classList.remove('border-red-500');
+        });
+        document.getElementById('formPendaftaran').addEventListener('change', function(e) {
+            e.target.classList.remove('border-red-500');
+        });
+    </script>
 </x-app-layout>

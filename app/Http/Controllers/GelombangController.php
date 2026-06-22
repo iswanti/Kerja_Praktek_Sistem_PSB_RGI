@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Gelombang;
-use App\Models\User;
 use App\Models\Pendaftaran;
+use App\Models\User;
 use App\Notifications\StatusPendaftaranNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GelombangController extends Controller
 {
@@ -47,50 +48,21 @@ class GelombangController extends Controller
             'wawancara_selesai.after_or_equal'   => 'Tanggal selesai wawancara tidak boleh sebelum tanggal mulai.',
         ]);
 
-        // Cek overlap gelombang aktif di tahun yang sama
-        if ($request->has('is_active') && $validated['pendaftaran_mulai'] && $validated['pendaftaran_selesai']) {
-            $overlap = Gelombang::where('is_active', true)
-                ->where('tahun_periode', $validated['tahun_periode'])
-                ->where(function ($q) use ($validated) {
-                    $q->whereBetween('pendaftaran_mulai', [
-                            $validated['pendaftaran_mulai'],
-                            $validated['pendaftaran_selesai'],
-                        ])
-                        ->orWhereBetween('pendaftaran_selesai', [
-                            $validated['pendaftaran_mulai'],
-                            $validated['pendaftaran_selesai'],
-                        ])
-                        ->orWhere(function ($q) use ($validated) {
-                            $q->where('pendaftaran_mulai', '<=', $validated['pendaftaran_mulai'])
-                              ->where('pendaftaran_selesai', '>=', $validated['pendaftaran_selesai']);
-                        });
-                })
-                ->exists();
+        $isActive = $request->boolean('is_active');
 
-            if ($overlap) {
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'pendaftaran_mulai' => 'Sudah ada gelombang aktif di rentang tanggal pendaftaran ini pada tahun ' . $validated['tahun_periode'] . '.',
-                    ]);
+        $gelombang = null;
+
+        DB::transaction(function () use ($validated, $isActive, &$gelombang) {
+            if ($isActive) {
+                Gelombang::where('is_active', true)
+                    ->update(['is_active' => false]);
             }
-        }
 
-        // Cek maksimal 2 gelombang per tahun
-        $jumlahGelombang = Gelombang::where('tahun_periode', $validated['tahun_periode'])->count();
-
-        if ($jumlahGelombang >= 2) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'tahun_periode' => 'Tahun ' . $validated['tahun_periode'] . ' sudah memiliki 2 gelombang (maksimal).',
-                ]);
-        }
-
-        $gelombang = Gelombang::create([
-            ...$validated,
-            'is_active' => $request->has('is_active'),
-        ]);
+            $gelombang = Gelombang::create([
+                ...$validated,
+                'is_active' => $isActive,
+            ]);
+        });
 
         $this->kirimNotifikasiGelombang($gelombang);
 
@@ -111,74 +83,51 @@ class GelombangController extends Controller
         $gelombang = Gelombang::findOrFail($id);
 
         $validated = $request->validate([
-            'nama_gelombang'     => 'required',
-            'tahun_periode'      => 'required',
-            'pendaftaran_mulai'  => 'nullable|date',
-            'pendaftaran_selesai'=> 'nullable|date|after_or_equal:pendaftaran_mulai',
-            'pretest_mulai'      => 'nullable|date',
-            'pretest_selesai'    => 'nullable|date|after_or_equal:pretest_mulai',
-            'durasi_pretest'     => 'nullable|integer',
-            'wawancara_mulai'    => 'nullable|date',
-            'wawancara_selesai'  => 'nullable|date|after_or_equal:wawancara_mulai',
-            'pengumuman_mulai'   => 'nullable|date',
+            'nama_gelombang'      => 'required',
+            'tahun_periode'       => 'required',
+
+            'pendaftaran_mulai'   => 'nullable|date',
+            'pendaftaran_selesai' => 'nullable|date|after_or_equal:pendaftaran_mulai',
+
+            'pretest_mulai'       => 'nullable|date',
+            'pretest_selesai'     => 'nullable|date|after_or_equal:pretest_mulai',
+
+            'durasi_pretest'      => 'nullable|integer',
+
+            'wawancara_mulai'     => 'nullable|date',
+            'wawancara_selesai'   => 'nullable|date|after_or_equal:wawancara_mulai',
+
+            'pengumuman_mulai'    => 'nullable|date',
         ], [
             'pendaftaran_selesai.after_or_equal' => 'Tanggal selesai pendaftaran tidak boleh sebelum tanggal mulai.',
             'pretest_selesai.after_or_equal'     => 'Tanggal selesai pretest tidak boleh sebelum tanggal mulai.',
             'wawancara_selesai.after_or_equal'   => 'Tanggal selesai wawancara tidak boleh sebelum tanggal mulai.',
         ]);
 
-        // Cek overlap gelombang aktif (kecuali diri sendiri)
-        if ($request->has('is_active') && $validated['pendaftaran_mulai'] && $validated['pendaftaran_selesai']) {
-            $overlap = Gelombang::where('is_active', true)
-                ->where('tahun_periode', $validated['tahun_periode'])
-                ->where('id', '!=', $id) // abaikan gelombang ini sendiri
-                ->where(function ($q) use ($validated) {
-                    $q->whereBetween('pendaftaran_mulai', [
-                            $validated['pendaftaran_mulai'],
-                            $validated['pendaftaran_selesai'],
-                        ])
-                        ->orWhereBetween('pendaftaran_selesai', [
-                            $validated['pendaftaran_mulai'],
-                            $validated['pendaftaran_selesai'],
-                        ])
-                        ->orWhere(function ($q) use ($validated) {
-                            $q->where('pendaftaran_mulai', '<=', $validated['pendaftaran_mulai'])
-                              ->where('pendaftaran_selesai', '>=', $validated['pendaftaran_selesai']);
-                        });
-                })
-                ->exists();
-
-            if ($overlap) {
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'pendaftaran_mulai' => 'Sudah ada gelombang aktif di rentang tanggal pendaftaran ini pada tahun ' . $validated['tahun_periode'] . '.',
-                    ]);
-            }
-        }
-
-        // Cek maksimal 2 gelombang per tahun (kecuali diri sendiri)
-        $jumlahGelombang = Gelombang::where('tahun_periode', $validated['tahun_periode'])
-            ->where('id', '!=', $id)
-            ->count();
-
-        if ($jumlahGelombang >= 2) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'tahun_periode' => 'Tahun ' . $validated['tahun_periode'] . ' sudah memiliki 2 gelombang (maksimal).',
-                ]);
-        }
+        $isActive = $request->boolean('is_active');
 
         $oldGelombang = clone $gelombang;
 
-        $gelombang->update([
-            ...$validated,
-            'is_active' => $request->has('is_active'),
-        ]);
+        DB::transaction(function () use ($gelombang, $validated, $isActive) {
+
+            // enforce hanya 1 aktif
+            if ($isActive) {
+                Gelombang::where('id', '!=', $gelombang->id)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+
+            $gelombang->update([
+                ...$validated,
+                'is_active' => $isActive,
+            ]);
+        });
+
+        // penting: refresh data setelah update (ini yang sering dilupakan)
+        $gelombang->refresh();
 
         $this->kirimNotifikasiGelombang($gelombang, $oldGelombang);
-
+        
         return redirect()
             ->route('admin.gelombang.index')
             ->with('success', 'Gelombang berhasil diperbarui.');

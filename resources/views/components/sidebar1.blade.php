@@ -18,9 +18,16 @@
             @if(Auth::user()->role === 'admin')
                 {{-- Admin: Data Pendaftaran --}}
                 <a href="{{ route('admin.pendaftaran.index') }}"
-                   class="h-12 flex items-center justify-center px-6 w-full transition relative
+                   class="relative group h-12 flex items-center justify-center px-6 w-full transition
                    {{ request()->routeIs('admin.pendaftaran.*') ? 'border-l-4 border-white' : 'border-l-4 border-transparent hover:border-white' }}">
                     <i data-lucide="file-text" class="text-white"></i>
+                     <div class="absolute left-20 top-1/2 -translate-y-1/2
+                                bg-gray-900 text-white text-xs px-2 py-1 rounded
+                                opacity-0 group-hover:opacity-100
+                                transition whitespace-nowrap z-50">
+                        data Pendaftaran
+                    </div>
+                    
                 </a>
 
                 {{-- Admin: Wawancara --}}

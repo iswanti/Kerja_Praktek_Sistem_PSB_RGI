@@ -36,6 +36,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update-photo', [ProfileController::class, 'updatePhoto'])
     ->name('profile.photo.update');
 
+    Route::get('/pendaftaran/cek-nik', [PendaftaranController::class, 'cekNik'])->name('pendaftaran.cekNik');
+
     Route::post('/notifications/{id}/read', function ($id) {
         $notification = auth()->user()
             ->notifications()

@@ -148,6 +148,10 @@
 
                 </table>
 
+                <div class="flex justify-end px-6 py-4 text-gray-500 ">
+                    {{ $users->links() }}
+                </div>
+
             </div>
         </div>
     </div>

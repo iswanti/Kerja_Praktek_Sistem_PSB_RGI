@@ -8,13 +8,45 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class PendaftaranExport implements FromCollection, WithHeadings
 {
+    protected $cabangId;
+    protected $status;
+    protected $gelombangId;
+
+    public function __construct($cabangId = null, $status = null, $gelombangId = null)
+    {
+        $this->cabangId = $cabangId;
+        $this->status = $status;
+        $this->gelombangId = $gelombangId;
+    }
+
     public function collection()
     {
-        return Pendaftaran::with(['cabang', 'jurusan','gelombang'])->get()->map(function ($item) {
+        $user = auth()->user();
+
+        $query = Pendaftaran::with(['cabang', 'jurusan', 'gelombang']);
+
+        // 🔒 AUTO LOCK CABANG UNTUK ADMIN NON-SUPERADMIN
+        if ($user->role?->nama !== 'Superadmin') {
+            $query->where('cabang_id', $user->cabang_id);
+        }
+
+        if (!empty($this->cabangId)) {
+            $query->where('cabang_id', $this->cabangId);
+        }
+
+        if (!empty($this->status)) {
+            $query->where('status', $this->status);
+        }
+
+        if (!empty($this->gelombangId)) {
+            $query->where('gelombang_id', $this->gelombangId);
+        }
+        
+        return $query->get()->map(function ($item) {
             return [
-                'gelombang_id'       => $item->gelombang->nama_gelombang,
-                'cabang'             => $item->cabang->nama_cabang ?? '-',      // nama cabang
-                'jurusan'            => $item->jurusan->nama_jurusan ?? '-',     // nama jurusan
+                'gelombang'        => $item->gelombang->nama_gelombang ?? '-',
+                'cabang'           => $item->cabang->nama_cabang ?? '-',
+                'jurusan'          => $item->jurusan->nama_jurusan ?? '-',     // nama jurusan
                 'nik'                => $item->nik,
                 'nkk'                => $item->nkk,
                 'nama'               => $item->nama,
@@ -52,6 +84,7 @@ class PendaftaranExport implements FromCollection, WithHeadings
                 'alasan'             => $item->alasan,
                 'pengenalan'         => is_array($item->pengenalan) ? implode(',', $item->pengenalan) : $item->pengenalan,
                 'rekomendasi'        => $item->rekomendasi,
+                'status'             => $item->status,     // nama status
             ];
         });
     }
@@ -65,7 +98,7 @@ class PendaftaranExport implements FromCollection, WithHeadings
             'Hobi', 'No HP', 'Penyakit', 'Facebook', 'Instagram', 'Nama Wali', 'Pendidikan Wali',
             'Pekerjaan Wali', 'No HP Wali', 'Nama Ibu', 'Pendidikan Ibu', 'Pekerjaan Ibu',
             'No HP Ibu', 'Alamat Orang Tua', 'Jumlah Keluarga', 'Pendapatan Keluarga',
-            'Status Rumah', 'Motivasi', 'Alasan', 'Pengenalan', 'Rekomendasi'
+            'Status Rumah', 'Motivasi', 'Alasan', 'Pengenalan', 'Rekomendasi', 'Status',
         ];
     }
 }

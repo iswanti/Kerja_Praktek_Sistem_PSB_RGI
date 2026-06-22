@@ -142,7 +142,7 @@
                 </table>
             </div>
 
-            <div class="mt-5">
+            <div class="flex justify-end px-6 py-4 text-gray-500 ">
                 {{ $jadwals->links() }}
             </div>
         </div>

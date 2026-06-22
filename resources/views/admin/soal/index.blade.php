@@ -1,35 +1,6 @@
 <x-app-layout>
     <div class="space-y-6">
 
-        {{-- Notifikasi --}}
-        {{-- @if(session('success'))
-        <div x-data="{ show: true }"
-            x-show="show"
-            x-init="setTimeout(() => show = false, 3000)"
-            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30">
-
-            <div class="bg-white rounded-3xl shadow-xl p-8 text-center w-[360px]">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
-                </div>
-
-                <h3 class="text-xl font-bold text-gray-800 mb-2">
-                    Berhasil
-                </h3>
-
-                <p class="text-gray-500 text-sm mb-6">
-                    {{ session('success') }}
-                </p>
-
-                <button type="button"
-                        @click="show = false"
-                        class="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                    OK
-                </button>
-            </div>
-        </div>
-    @endif --}}
-
         {{-- Header --}}
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -219,13 +190,9 @@
             </div>
 
             @if($soals->count())
-                <div class="px-6 py-4 border-t border-gray-100 text-sm text-gray-500 flex items-center justify-between">
-                    <span>
-                        Menampilkan {{ $soals->firstItem() }} - {{ $soals->lastItem() }}
-                        dari {{ $soals->total() }} data
-                    </span>
-
-                    {{ $soals->withQueryString()->links() }}
+                
+                <div class="flex justify-end px-6 py-4 text-gray-500 ">
+                    {{ $soals->links() }}
                 </div>
             @endif
         </div>

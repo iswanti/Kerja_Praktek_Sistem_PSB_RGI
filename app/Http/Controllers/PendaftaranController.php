@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PendaftaranExport;
 use App\Models\Cabang;
-use App\Models\Pendaftaran;
-use App\Models\Jurusan;
 use App\Models\Gelombang;
+use App\Models\Jurusan;
+use App\Models\Pendaftaran;
+use App\Notifications\StatusPendaftaranNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Notifications\StatusPendaftaranNotification;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class PendaftaranController extends Controller
@@ -556,12 +558,22 @@ class PendaftaranController extends Controller
             ->with('success', 'Data berhasil dihapus');
     }
 
+
     public function show($id)
     {
-        $pendaftaran = Pendaftaran::with(['cabang', 'jurusan', 'wawancara', 'gelombang'])
-            ->findOrFail($id);
+        $pendaftaran = Pendaftaran::with(['cabang', 'jurusan', 'wawancara'])->findOrFail($id);
 
-        // Cek apakah jadwal verifikasi kelulusan sudah tiba
+        $statusOrder = [
+            'menunggu_verifikasi' => 0, 'seleksi_pretest' => 1, 'wawancara' => 2,
+            'verifikasi_kelulusan_siswa' => 3, 'cadangan' => 3, 'diterima' => 3, 'ditolak' => 3,
+        ];
+
+        $defaultTab = match(true) {
+            in_array($pendaftaran->status, ['verifikasi_kelulusan_siswa', 'cadangan', 'diterima', 'ditolak']) => 'kelulusan',
+            $pendaftaran->status === 'wawancara' => 'wawancara',
+            $pendaftaran->status === 'seleksi_pretest' => 'pretest',
+            default => 'pendaftaran',
+        };
         $verifikasiKelulusanAktif = false;
         if ($pendaftaran->gelombang) {
             $verifikasiKelulusanAktif = now()->greaterThanOrEqualTo(
@@ -569,7 +581,8 @@ class PendaftaranController extends Controller
             );
         }
 
-        return view('pendaftaran.show', compact('pendaftaran', 'verifikasiKelulusanAktif'));
+        return view('pendaftaran.show', compact('pendaftaran', 'defaultTab', 'verifikasiKelulusanAktif'));
+        // $verifikasiKelulusanAktif kemungkinan sudah kamu hitung di tempat lain, sesuaikan
     }
 
     public function verifikasi(Request $request, $id)
@@ -618,6 +631,77 @@ class PendaftaranController extends Controller
                 'success',
                 $messages[$request->status] ?? 'Status pendaftaran berhasil diperbarui.'
             );
+    }
+
+    public function cekNik(Request $request)
+    {
+        $request->validate(['nik' => 'required|digits:16']);
+
+        $pendaftaran = Pendaftaran::with(['cabang', 'jurusan'])
+            ->where('nik', $request->nik)
+            ->latest()
+            ->first();
+
+        if (!$pendaftaran) {
+            return response()->json(['found' => false]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'gelombang' => $pendaftaran->gelombang?->nama ?? '-',
+            'status' => ucwords(str_replace('_', ' ', $pendaftaran->status)),
+            'data' => [
+                'nik'               => $pendaftaran->nik,
+                'nkk'               => $pendaftaran->nkk,
+                'nama'              => $pendaftaran->nama,
+                'tempat_lahir'      => $pendaftaran->tempat_lahir,
+                'tgl_lahir'         => $pendaftaran->tgl_lahir,
+                'umur'              => $pendaftaran->umur,
+                'jenis_kelamin'     => $pendaftaran->jenis_kelamin,
+                'anak_ke'           => $pendaftaran->anak_ke,
+                'alamat'            => $pendaftaran->alamat,
+                'id_alamat'         => $pendaftaran->id_alamat,
+                'provinsi_nama'     => $pendaftaran->provinsi_nama,
+                'kabupaten_nama'    => $pendaftaran->kabupaten_nama,
+                'kecamatan_nama'    => $pendaftaran->kecamatan_nama,
+                'kelurahan_nama'    => $pendaftaran->kelurahan_nama,
+                'pendidikan'        => $pendaftaran->pendidikan,
+                'sekolah'           => $pendaftaran->sekolah,
+                'cita_cita'         => $pendaftaran->cita_cita,
+                'hobi'              => $pendaftaran->hobi,
+                'no_hp'             => $pendaftaran->no_hp,
+                'penyakit'          => $pendaftaran->penyakit,
+                'facebook'          => $pendaftaran->facebook,
+                'instagram'         => $pendaftaran->instagram,
+                'nama_wali'         => $pendaftaran->nama_wali,
+                'pendidikan_wali'   => $pendaftaran->pendidikan_wali,
+                'pekerjaan_wali'    => $pendaftaran->pekerjaan_wali,
+                'nohp_wali'         => $pendaftaran->nohp_wali,
+                'nama_ibu'          => $pendaftaran->nama_ibu,
+                'pendidikan_ibu'    => $pendaftaran->pendidikan_ibu,
+                'pekerjaan_ibu'     => $pendaftaran->pekerjaan_ibu,
+                'nohp_ibu'          => $pendaftaran->nohp_ibu,
+                'alamat_orangtua'   => $pendaftaran->alamat_orangtua,
+                'jml_keluarga'      => $pendaftaran->jml_keluarga,
+                'pendapatan_keluarga' => $pendaftaran->pendapatan_keluarga,
+                'status_rumah'      => $pendaftaran->status_rumah,
+                'motivasi'          => $pendaftaran->motivasi,
+                'alasan'            => $pendaftaran->alasan,
+                'pengenalan'        => $pendaftaran->pengenalan,
+                'rekomendasi'       => $pendaftaran->rekomendasi,
+            ]
+        ]);
+    }
+    public function download(Request $request)
+    {
+        return Excel::download(
+            new PendaftaranExport(
+                auth()->user()->cabang_id,   // kalau admin cabang
+                $request->status,
+                $request->gelombang_id
+            ),
+            'pendaftaran.xlsx'
+        );
     }
 
     

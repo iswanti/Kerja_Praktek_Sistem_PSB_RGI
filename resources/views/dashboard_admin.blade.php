@@ -81,7 +81,7 @@
         </form>
 
         {{-- STAT CARDS --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
                 <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -168,103 +168,80 @@
         
         {{-- Status Tahapan Pendaftaran --}}
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-6 w-full">
-            <h2 class="text-sm font-bold text-gray-900 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 sm:px-8 py-6 w-full overflow-x-auto">
+
+            <h2 class="text-sm font-bold text-gray-900 mb-6 sm:mb-8">
                 Status Tahapan Pendaftaran
             </h2>
 
             @php
                 $total = ($totalPendaftar ?? 0) > 0 ? $totalPendaftar : 0;
+            @endphp
+
+            @php
                 $steps = [
-                [
-                    'label' => 'Menunggu Verifikasi',
-                    'count' => ($menungguVerifikasi ?? 0),
-                    'color' => '#f59e0b',
-                ],
-                [
-                    'label' => 'Seleksi Pretest',
-                    'count' => ($seleksiPretest ?? 0),
-                    'color' => '#2563eb',
-                ],
-                [
-                    'label' => 'Wawancara',
-                    'count' => ($wawancara ?? 0),
-                    'color' => '#8b5cf6',
-                ],
-                [
-                    'label' => 'Verifikasi Kelulusan',
-                    'count' => ($verifikasiKelulusan ?? 0),
-                    'color' => '#14b8a6',
-                ],
-                [
-                    'label' => 'Diterima',
-                    'count' => ($diterima ?? 0),
-                    'color' => '#22c55e',
-                ],
-            ];
+                    ['label' => 'Menunggu Verifikasi', 'count' => ($menungguVerifikasi ?? 0), 'color' => '#f59e0b'],
+                    ['label' => 'Seleksi Pretest', 'count' => ($seleksiPretest ?? 0), 'color' => '#2563eb'],
+                    ['label' => 'Wawancara', 'count' => ($wawancara ?? 0), 'color' => '#8b5cf6'],
+                    ['label' => 'Verifikasi Kelulusan', 'count' => ($verifikasiKelulusan ?? 0), 'color' => '#14b8a6'],
+                    ['label' => 'Diterima', 'count' => ($diterima ?? 0), 'color' => '#22c55e'],
+                ];
             @endphp
 
             {{-- TIMELINE --}}
-            <div class="relative w-full">
+            <div class="relative w-full min-w-[700px] sm:min-w-0">
 
-                {{-- GARIS MEMANJANG --}}
-                <div class="absolute top-5 left-0 right-0 h-[3px] z-0">
+                {{-- LINE --}}
+                <div class="absolute top-5 left-4 right-4 h-[3px] z-0 hidden sm:block">
                     <div class="w-full h-full rounded-full bg-gradient-to-r
-                                from-amber-400
-                                via-green-500
-                                via-blue-600
-                                via-violet-500
-                                to-teal-600">
+                                from-amber-400 via-blue-500 via-violet-500 to-teal-600">
                     </div>
                 </div>
 
-                {{-- STEP ITEM --}}
-                <div class="relative z-10 flex justify-between items-start w-full">
+                {{-- MOBILE SCROLL LINE --}}
+                <div class="absolute top-5 left-0 right-0 h-[2px] z-0 sm:hidden bg-gray-200"></div>
+
+                <div class="relative z-10 flex gap-6 sm:gap-0 sm:justify-between items-start w-max sm:w-full">
 
                     @foreach($steps as $index => $step)
                         @php
                             $percent = round(($step['count'] / max($total, 1)) * 100, 1);
                         @endphp
 
-                        <div class="flex flex-col items-center text-center flex-1">
+                        <div class="flex flex-col items-center text-center w-[140px] sm:flex-1">
 
-                            {{-- BULATAN --}}
-                            <div class="w-10 h-10 rounded-full
-                                        flex items-center justify-center
-                                        text-white font-bold text-sm
-                                        border-4 border-white
-                                        ring-2 ring-gray-200
-                                        shadow-md"
+                            {{-- BULAT --}}
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm border-2 sm:border-4 border-white ring-1 sm:ring-2 ring-gray-200 shadow-md"
                                 style="background-color: {{ $step['color'] }};">
                                 {{ $index + 1 }}
                             </div>
 
                             {{-- LABEL --}}
-                            <p class="mt-3 text-xs font-semibold text-gray-800 leading-tight whitespace-nowrap">
+                            <p class="mt-2 text-[11px] sm:text-xs font-semibold text-gray-800 leading-tight break-words">
                                 {{ $step['label'] }}
                             </p>
 
-                            {{-- ANGKA --}}
-                            <div class="mt-1 flex items-baseline gap-1 justify-center">
-                                <span class="text-2xl font-bold text-gray-900">
+                            {{-- COUNT --}}
+                            <div class="mt-1 flex flex-col sm:flex-row items-center gap-0 sm:gap-1 justify-center">
+                                <span class="text-lg sm:text-2xl font-bold text-gray-900">
                                     {{ number_format($step['count'], 0, ',', '.') }}
                                 </span>
-                                <span class="text-sm text-gray-500">
+                                <span class="text-[10px] sm:text-sm text-gray-500">
                                     ({{ str_replace('.', ',', $percent) }}%)
                                 </span>
                             </div>
+
                         </div>
                     @endforeach
 
                 </div>
             </div>
-            
 
             {{-- TOTAL --}}
-            <div class="relative mt-8 pt-4">
+            <div class="relative mt-6 sm:mt-8 pt-4">
                 <div class="absolute left-0 right-0 top-0 h-px bg-gray-200"></div>
 
-                <div class="relative bg-white px-4 text-center text-sm text-gray-500">
+                <div class="relative bg-white px-2 sm:px-4 text-center text-xs sm:text-sm text-gray-500">
                     Total Pendaftar:
                     <span class="font-bold text-gray-900">
                         {{ number_format($total, 0, ',', '.') }}

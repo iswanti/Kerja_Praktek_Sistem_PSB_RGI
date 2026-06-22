@@ -22,7 +22,7 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-end">
                         @if(auth()->user()->canCreateMenu('Pendaftaran'))
                             <a href="{{ route('pendaftaran.create') }}"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
@@ -31,7 +31,7 @@
                             </a>
                         @endif
 
-                        <a href="{{ route('admin.pendaftaran.download') }}"
+                        <a href="{{ route('admin.pendaftaran.download', request()->all()) }}"
                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition">
                             <i data-lucide="download" class="w-5 h-5"></i> Download
                         </a>
@@ -143,12 +143,12 @@
                             Verifikasi Kelulusan
                         </option>
 
-                        <option value="verifikasi_kelulusan_siswa"
+                        <option value="diterima"
                             {{ request('status') == 'diterima' ? 'selected' : '' }}>
                             Diterima
                         </option>
 
-                        <option value="verifikasi_kelulusan_siswa"
+                        <option value="cadangan"
                             {{ request('status') == 'cadangan' ? 'selected' : '' }}>
                             Cadangan
                         </option>
@@ -210,9 +210,9 @@
                                     Tanggal Buat
                                 </th>
 
-                                <th class="px-6 py-4 text-left font-semibold">
+                                {{-- <th class="px-6 py-4 text-left font-semibold">
                                     Gelombang
-                                </th>
+                                </th> --}}
 
                                 <th class="px-6 py-4 text-center font-semibold">
                                     Action
@@ -298,9 +298,9 @@
                                         {{ $item->created_at->format('d/m/Y') }}
                                     </td>
 
-                                    <td class="px-6 py-5">
+                                    {{-- <td class="px-6 py-5">
                                         {{ substr($item->gelombang->nama_gelombang, -1) }}
-                                    </td>
+                                    </td> --}}
 
                                     <td class="px-6 py-5">
 
@@ -309,31 +309,48 @@
                                             {{-- Lihat --}}
                                             @if(auth()->user()->canReadMenu('Pendaftaran'))
                                                 <a href="{{ route('admin.pendaftaran.show', $item->id) }}"
-                                                    class="text-blue-600 hover:text-blue-800 transition">
-                                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                                    class="relative group text-blue-600 hover:text-blue-800 inline-flex items-center justify-center transition">
+                                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-blue-800 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                                                        Lihat Pendaftaran
+                                                    </span>
                                                 </a>
                                             @endif
 
                                             {{-- EDIT --}}
                                             @if(auth()->user()->canUpdateMenu('Pendaftaran'))
                                                 <a href="{{ route('admin.pendaftaran.edit', $item->id) }}"
-                                                class="text-indigo-600 hover:text-indigo-800 text-lg">
+                                                class="relative group text-indigo-600 hover:text-indigo-800 inline-flex items-center justify-center">
                                                     <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                    {{-- TOOLTIP --}}
+                                                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-indigo-800 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                                                        Edit Pendaftaran
+                                                    </span>
                                                 </a>
                                             @endif
 
                                             {{-- DELETE --}}
                                             @if(auth()->user()->canDeleteMenu('Pendaftaran'))
-                                                <form action="{{ route('admin.pendaftaran.destroy', $item->id) }}"
-                                                    method="POST"
-                                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                <form id="delete-pendaftaran-{{ $item->id }}"
+                                                    action="{{ route('admin.pendaftaran.destroy', $item->id) }}"
+                                                    method="POST">
 
                                                     @csrf
                                                     @method('DELETE')
 
-                                                    <button type="submit"
-                                                            class="text-red-500 hover:text-red-700 text-lg">
+                                                    <button type="button"
+                                                            onclick="confirmDelete('delete-pendaftaran-{{ $item->id }}')"
+                                                            class="relative group text-red-500 hover:text-red-700 inline-flex items-center justify-center">
+
                                                         <i data-lucide="trash-2" class="w-5 h-5"></i>
+
+                                                        {{-- TOOLTIP --}}
+                                                        <span class="absolute -top-8 left-1/2 -translate-x-1/2
+                                                                    hidden group-hover:block
+                                                                    bg-red-700 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                                                            Hapus Pendaftaran
+                                                        </span>
+
                                                     </button>
 
                                                 </form>

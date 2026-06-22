@@ -19,43 +19,28 @@
     </head>
 
     <body class="font-sans antialiased bg-gray-50">
-        {{-- <div x-data="{ sidebarOpen: true }" class="flex">
+        <div x-data="{sidebarOpen: window.innerWidth >= 1024, isMobile: window.innerWidth < 1024 }"  
+            x-init=" $watch('isMobile', val => { if (val) sidebarOpen = false })"
+            @resize.window="
+                isMobile = window.innerWidth < 1024;
+                sidebarOpen = window.innerWidth >= 1024;
+            " 
+            class="flex">
 
-            @include('components.sidebar')
-
-            <div id="mainContent" 
-                :class="sidebarOpen ? 'ml-[336px]' : 'ml-[80px]'" 
-                class="px-4 sm:px-6 lg:px-9 py-6 w-full min-h-screen transition-all duration-300 ease-in-out z-10 overflow-x-hidden">
-                
-                @include('layouts.navigation')
-
-                <div class="mt-4">
-                    {{ $slot }}
-                </div>
-            </div>
-
-        </div> --}}
-        <div x-data="{sidebarOpen: window.innerWidth >= 1024,
-            isMobile: window.innerWidth < 1024
-        }" 
-        x-init="
-            $watch('isMobile', val => { if (val) sidebarOpen = false })
-        "
-        @resize.window="
-            isMobile = window.innerWidth < 1024;
-            sidebarOpen = window.innerWidth >= 1024;
-        "
-        class="flex">
             @include('components.sidebar')
 
             <div id="mainContent" 
                 :class="isMobile ? 'ml-[80px]' : (sidebarOpen ? 'ml-[336px]' : 'ml-[80px]')" 
-                class="px-4 sm:px-6 lg:px-9 py-6 w-full min-h-screen transition-all duration-300 ease-in-out z-10 overflow-x-hidden">
+                class="px-4 sm:px-6 lg:px-9 py-6 w-full min-h-screen flex flex-col transition-all duration-300 ease-in-out z-10 overflow-x-hidden">
                 
                 @include('layouts.navigation')
 
                 <div class="mt-4">
                     {{ $slot }}
+                
+
+                <div class="mt-auto">
+                    <x-footer />
                 </div>
             </div>
         </div>
@@ -250,24 +235,20 @@
         }
 
         function confirmLanjut(label, formId) {
-        Swal.fire({
-            title: label + '?',
-            text: `Yakin ingin mengubah status menjadi "${label}"?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, lanjutkan',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#2563eb',
-        }).then(result => {
-            if (result.isConfirmed) {
-                document.getElementById(formId).submit();
-            }
-        });
-
-        
-    }
-
-
+            Swal.fire({
+                title: label + '?',
+                text: `Yakin ingin mengubah status menjadi "${label}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, lanjutkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#2563eb',
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
     </script>
 
     </body>
